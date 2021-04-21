@@ -7,7 +7,6 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import sys
 
-ticker_list = []
 def app():
 	START = "2015-01-01"
 	TODAY = date.today().strftime("%Y-%m-%d")
@@ -79,29 +78,3 @@ def app():
 	
 
 	
-	"""
-	@st.cache(allow_output_mutation=True)
-	def get_data():
-		return []
-	
-
-	ticker_to_add = st.text_input("add ticker")
-	if st.button("add to list"):
-		get_data().append(ticker_to_add)
-	
-	if "" in get_data():
-		get_data().remove("")
-	else: 
-		pass
-	
-	st.write(pd.DataFrame(get_data()))
- 
-	newlist = st.multiselect("selected tickers: ", get_data(), get_data())
- 
-	if st.button("update list"):
-		get_data().clear()#.append(newlist)
-		get_data().append("gggggg")
-
-	st.write(pd.DataFrame(get_data()))
-	st.write(newlist)
-	"""

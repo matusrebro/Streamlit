@@ -1,10 +1,9 @@
-import stonks
-import app2
+import stonks, stonks_portfolio
 import streamlit as st
 
 PAGES = {
     "Stonks": stonks,
-    "TODO": app2
+    "Stonks portoflio": stonks_portfolio
 }
 
 st.sidebar.title('Navigation')
