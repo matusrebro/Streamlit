@@ -11,13 +11,13 @@ def app():
 	START = "2015-01-01"
 	TODAY = date.today().strftime("%Y-%m-%d")
 
-	st.title('Mater pochovat')
+	st.title('Single stock info and indices')
 
 	# stocks = ('GOOG', 'AAPL', 'MSFT', 'GME')
 	# selected_stock = st.selectbox('Select dataset for prediction', stocks)
 
 
-	selected_stock = st.text_input("Vyber stonk", 'MSFT')
+	selected_stock = st.text_input("Enter stock ticker", 'MSFT')
 
 	@st.cache
 	def load_data(ticker):
@@ -34,7 +34,7 @@ def app():
 	data, stock_info = load_data(selected_stock)
 	data_load_state.text('Loading data... done!')
 
-	st.markdown('Vybrau si **'+stock_info['longName']+'**.')
+	st.markdown('Selected stock: **'+stock_info['longName']+'**.')
 
 	#st.write(stock_info['longName'])
 

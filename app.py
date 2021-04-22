@@ -1,9 +1,10 @@
-import stonks, stonks_portfolio
+import stonks, stonks_portfolio, simulations
 import streamlit as st
 
 PAGES = {
-    "Stonks": stonks,
-    "Stonks portoflio": stonks_portfolio
+    "Stock info": stonks,
+    "Stocks portfolio": stonks_portfolio,
+    "Simulators": simulations
 }
 
 st.sidebar.title('Navigation')

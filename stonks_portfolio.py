@@ -53,7 +53,10 @@ def app():
             #st.write(ticker_info)
         return stocks_info
     
+    data_load_state = st.text('Loading data...')
     stocks_info = load_ticker_info(get_data())
+    data_load_state.text('Loading data... done!')
+    
     stocks_basic_data = pd.DataFrame(columns = ['Ticker', 'Company name'])    
     stocks_name = []
     for idx, stock_info in enumerate(stocks_info):
