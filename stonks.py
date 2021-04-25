@@ -16,7 +16,6 @@ def app():
 	# stocks = ('GOOG', 'AAPL', 'MSFT', 'GME')
 	# selected_stock = st.selectbox('Select dataset for prediction', stocks)
 
-
 	selected_stock = st.text_input("Enter stock ticker", 'MSFT')
 
 	@st.cache
@@ -76,5 +75,8 @@ def app():
 	st.text(f"Mean deily log return: {round(log_return_d, 3)} [%]")
 	st.text(f"Mean annual log return: {round(log_return_a, 3)} [%]")
 	
-
+	stock_risk_d = data['simple_return'].std() * 100
+	stock_risk_a = data['simple_return'].std() * 250 ** 0.5 * 100
 	
+	st.text(f"Daily risk: {round(stock_risk_d, 3)} [%]")
+	st.text(f"Annual risk: {round(stock_risk_a, 3)} [%]")  

@@ -1,4 +1,6 @@
-import stonks, stonks_portfolio, simulations
+import stonks
+import stonks_portfolio
+import simulations
 import streamlit as st
 
 PAGES = {
