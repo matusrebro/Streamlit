@@ -177,3 +177,37 @@ def app():
         
         st.text(f"Annual portfolio volatility: {round(portfolio_var_annual ** 0.5 * 100, 3)} [%]")
         
+        
+        st.subheader("Markowitz portfolio analysis")
+        if len(get_data()) > 1:
+            weight_combin_no = 1000
+            
+            weights_rand_comb_str = []
+            portfolio_returns_a_arr = np.zeros(weight_combin_no)
+                                               
+            portfolio_var_annual_arr = np.zeros(weight_combin_no)
+                                                
+            for i in range(weight_combin_no):
+                weights_rand = np.random.random(len(get_data()))
+                weights_rand /= np.sum(weights_rand)
+                weights_rand_l = weights_rand.tolist()
+                weights_rand_l = ['{:.2f}'.format(x) for x in weights_rand_l]
+                weights_rand_comb_str.append(','.join(weights_rand_l))
+                portfolio_returns_a_arr[i] = np.dot(annual_stock_returns*250*100, np.array(weights_rand))
+                portfolio_var_annual_arr[i] = np.dot(np.array(weights_rand).T, np.dot(cov_matrix * 250, np.array(weights_rand)))
+            
+            column_names = ['returns', 'variance', 'weights']
+            df_Markowitz = pd.DataFrame(columns=column_names)
+            
+            df_Markowitz['returns'] = portfolio_returns_a_arr
+            df_Markowitz['variance'] = portfolio_var_annual_arr
+            df_Markowitz['weights'] = weights_rand_comb_str
+            # , text=df_Markowitz['weights']
+            def plot_Markowitz():
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=df_Markowitz['variance'], y=df_Markowitz['returns'], mode='markers', text=df_Markowitz['weights']))
+                fig.layout.update(title_text='Markowitz plot', xaxis_rangeslider_visible=False)
+                st.plotly_chart(fig)
+                
+            plot_Markowitz()
+            
