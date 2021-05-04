@@ -6,6 +6,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 import sys
+from scipy.optimize import minimize
 
 def app():
     st.title('Portfolio metrics')
@@ -177,9 +178,8 @@ def app():
         
         st.text(f"Annual portfolio volatility: {round(portfolio_var_annual ** 0.5 * 100, 3)} [%]")
         
-        
-        st.subheader("Markowitz portfolio analysis")
         if len(get_data()) > 1:
+            st.subheader("Markowitz portfolio analysis")
             weight_combin_no = 1000
             
             weights_rand_comb_str = []
@@ -203,6 +203,7 @@ def app():
             df_Markowitz['variance'] = portfolio_var_annual_arr
             df_Markowitz['weights'] = weights_rand_comb_str
             # , text=df_Markowitz['weights']
+            
             def plot_Markowitz():
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=df_Markowitz['variance'], y=df_Markowitz['returns'], mode='markers', text=df_Markowitz['weights']))
@@ -210,4 +211,20 @@ def app():
                 st.plotly_chart(fig)
                 
             plot_Markowitz()
+            
+            # lets minimize variance
+            def fcn_obj_weights(weights, cov_matrix):
+                if np.sum(weights) != 1:
+                    return 1e6
+                else:
+                    return np.dot(weights.T, np.dot(cov_matrix * 250, weights))
+            
+            w0 = np.ones(len(get_data())) * 1/len(get_data())
+            
+            run_simplex = st.button("Find optimal weights")
+            if run_simplex:
+                data_load_state = st.text('Running Simplex optimization...')
+                res = minimize(fcn_obj_weights, w0, args=(cov_matrix,))
+                data_load_state = st.text('...Done')
+                st.write(res.x)
             
