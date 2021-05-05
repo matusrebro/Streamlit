@@ -4,7 +4,6 @@ from plotly import graph_objs as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
-import sys
 from Diabetes import minimal_model
 
 def app():
@@ -30,7 +29,7 @@ def app():
     gly_index_options = ['low', 'medium', 'high' ,'glucose']
     gly_index = st.selectbox(label= "Glycemic index", options = gly_index_options)
     
-    t, G, I = model.ogtt(glucose, BW, gly_index, plot = False)
+    t, G, I = model.ogtt(glucose, BW, gly_index, plot=False)
     
     def plot_simulation_results():
         #fig = go.Figure()

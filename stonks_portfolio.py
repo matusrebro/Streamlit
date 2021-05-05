@@ -7,6 +7,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import sys
 from scipy.optimize import minimize
+# from scipy.optimize import least_squares
 
 def app():
     st.title('Portfolio metrics')
@@ -204,27 +205,45 @@ def app():
             df_Markowitz['weights'] = weights_rand_comb_str
             # , text=df_Markowitz['weights']
             
-            def plot_Markowitz():
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=df_Markowitz['variance'], y=df_Markowitz['returns'], mode='markers', text=df_Markowitz['weights']))
-                fig.layout.update(title_text='Markowitz plot', xaxis_rangeslider_visible=False)
-                st.plotly_chart(fig)
-                
-            plot_Markowitz()
-            
             # lets minimize variance
             def fcn_obj_weights(weights, cov_matrix):
-                if np.sum(weights) != 1:
+                if np.abs(np.sum(weights)-1) > 1e-5:
                     return 1e6
                 else:
                     return np.dot(weights.T, np.dot(cov_matrix * 250, weights))
-            
-            w0 = np.ones(len(get_data())) * 1/len(get_data())
-            
-            run_simplex = st.button("Find optimal weights")
+
+            run_simplex = st.button("Find optimal weights (minimizing variance)")
+            opt_weights = None
             if run_simplex:
+                w0 = np.ones(len(get_data())) * 1/len(get_data())
                 data_load_state = st.text('Running Simplex optimization...')
-                res = minimize(fcn_obj_weights, w0, args=(cov_matrix,))
-                data_load_state = st.text('...Done')
-                st.write(res.x)
+                res = minimize(fcn_obj_weights, w0, args=(cov_matrix,), method='Nelder-Mead', options={'fatol': 0.0000001})
+                data_load_state.text('...Done')
+                st.text("Optimaal weights:")
+                opt_weights = res.x
+                df_optimal_weights = pd.DataFrame(columns=get_data())
+                df_optimal_weights = df_optimal_weights.append(pd.DataFrame([opt_weights], columns=get_data()))
+                st.write(df_optimal_weights)
+                opt_variance = fcn_obj_weights(opt_weights, cov_matrix)
+                opt_returns = np.dot(annual_stock_returns*250*100, np.array(opt_weights))
+                
+            def plot_Markowitz(opt_weights=None):
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=df_Markowitz['variance'], 
+                                         y=df_Markowitz['returns'], 
+                                         mode='markers', 
+                                         text=df_Markowitz['weights'],
+                                         name='Set of random weights'))
+                if opt_weights is not None:
+                    fig.add_trace(go.Scatter(x=[opt_variance, ], 
+                                             y=[opt_returns, ], 
+                                             mode='markers', 
+                                             fillcolor='red',
+                                             name='Optimal weights'))
+                fig.layout.update(title_text='Markowitz plot', xaxis_rangeslider_visible=False)
+                fig.update_xaxes(title_text="variance [-]")
+                fig.update_yaxes(title_text="returns [%]")
+                st.plotly_chart(fig)
+              
+            plot_Markowitz(opt_weights)
             
