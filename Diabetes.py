@@ -190,7 +190,7 @@ class minimal_model:
             
             x = self.simulation(t, RaG_iv, RaI, plot)
             
-            return x[:,0], x[:,4] # G, I
+            return t, x[:,0], x[:,4] # t, G, I
         
         def hyperinsulinemic_euglycemic_glucose_clamp(self, BW, insulin_rate = 120, plot = True):
             """
