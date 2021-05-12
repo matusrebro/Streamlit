@@ -269,7 +269,7 @@ class minimal_model:
                 plt.grid()
                 plt.tight_layout()
                 
-            return x[:,0], x[:,4], RaG_iv # G, I, glucose infusion [mmol/min/kg]
+            return t, x[:,0], x[:,4], RaG_iv # G, I, glucose infusion [mmol/min/kg]
     
     # --- class for model with oral inputs
     class oral:

@@ -24,9 +24,6 @@ def app():
     if col_add[1].button("add to list"):
         get_data().append(ticker_to_add)
 
-    #st.text("get_data object:")
-    #st.write(pd.DataFrame(get_data()))
-
     if "" in get_data():
         get_data().remove("")
     else: 
@@ -35,19 +32,9 @@ def app():
     col_mod = st.beta_columns(2)
     newlist = col_mod[0].multiselect("selected tickers: ", get_data(), get_data())
 
-    #st.text("get_data object:")
-    #st.write(pd.DataFrame(get_data()))
-    #st.text("newlist list:")
-    #st.write(newlist)
-
     if col_mod[1].button("update list"):
         get_data().clear()
         get_data().extend(newlist)
-
-    # st.text("get_data object:")
-    # st.write(pd.DataFrame(get_data()))
-    # st.text("newlist list:")
-    # st.write(newlist)
     
     @st.cache
     def load_ticker_info(ticker_list):
