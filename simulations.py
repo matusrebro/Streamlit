@@ -19,10 +19,50 @@ def app():
                                       options=optionsSim)
         
         if simulationPage == 'IVGTT simulation':
-            st.subheader("Intravenous glucose tolerance test simulator")
+            st.subheader('Insulin-modified intravenous glucose tolerance test')
+            with st.beta_expander("Model equations"):
+                st.text('Minimal (Bergman) model is given by three differential equations:')
+                st.latex(r'''
+                \frac{dG(t)}{dt}=-k_xX(t)G(t)-\frac{1}{T_G}(G(t)-G_b)+\frac{1}{V_G}Ra_G(t)  \\
+                \frac{dX(t)}{dt}=-\frac{1}{T_x}X(t)+\frac{1}{T_x}(I(t)-I_b) \\
+                \frac{dI(t)}{dt}=-\frac{1}{T_i}(I(t)-I_b)+S(t) +\frac{1}{V_I}Ra_I(t)
+                ''')
+                st.text('Initial equilibrium state is given by:')
+                st.latex(r'G(0)=G_b \quad X(0)=0 \quad I(0)=I_b')
+
+                st.markdown(r'''
+                where $G(t)$ [mmol/L] is glycemia, $G_b$ [mmol/L] is its basal value, signal $X(t)$ [mU/L] represents so called remote insulin and $I(t)$ [mU/L] 
+                is plasma insulin and $I_b$ [mU/L] its basal value. System inputs are $Ra_G(t)$ [mmol/kg/min] - glucose infusion 
+                (or more general - glucose rate of appearance which can be also caused by oral glucose intake) and 
+                $Ra_I(t)$ [mU/kg/min] is insulin infusion. Parameters $V_G$ and $V_I$ [L/kg] represent distribution volumes of glucose a insulin in blood. 
+                Last signal $S(t)$ [mU/L/min] represents pancreas insulin secretion.
+
+                Other model parameters are $k_x$ [L/(mU.min)] - insulin sensitivity index, $T_G$ [min] - glucose compartment time constant, 
+                its inverse is often called as glucose effectiveness (insulin independent index of glucose lowering capacity). Other time constants $T_x$, $T_i$ [min] 
+                govern dynamics of remote insulin and insulin compartments.
+                ''')
+                st.markdown(r'Secretion $S(t)$ is given by')
+                st.latex(r'''
+                S(t)=\left\{\begin{array}{ll}
+                S^{+}(t)  & ;S^{+}(t) \geq 0 \\
+                0 & ;\textrm{else} 
+                \end{array} \right.
+                ''')
+                st.markdown(r'where  $S^{+}(t)$ has PD controller-like structure:')
+                st.latex(r'''
+                S^{+}(t)= K_{G1}(G(t)-G_b) + K_{G2} \frac{s}{T_Ps+1} (G(t)-G_b)
+                ''')
+                st.markdown(r'''
+                Here the parameters are: $K_{G1}$ [mU/min per mmol] is proportional gain (pancreas sensitivity to glycemia deviation from equilibrium), 
+                $K_{G2}$ [mU per mmol] is derivative gain (pancreas sensitivity to rate of change of glycemia devation from equilibrium) and 
+                $T_P$ [min] is time constant of derivative part.
+                ''')
+
             options = ['normal', 'obese', 't2dm']
-            pars = st.selectbox("Model parameters", options=options)
+            pars = st.selectbox("Choose model parameters", options=options)
             
+            disp_par = st.beta_container()
+
             basal_cols = st.beta_columns(2)
             
             Gb = basal_cols[0].number_input("Basal glucose concentration [mmol/L]", 
@@ -37,6 +77,9 @@ def app():
             # initialize model for normal subject
             model = minimal_model.iv(Gb, Ib, parameters=pars)
             
+            with disp_par.beta_expander("See parameter values"):
+                st.write(model.parameters)
+
             input_cols = st.beta_columns(2)
             
             glucose_dose = input_cols[0].slider("Glucose bolus dose [g/kg]", 
@@ -82,7 +125,7 @@ def app():
             plot_simulation_results()
             
         elif simulationPage == 'OGTT simulation':
-            st.subheader("Oral glucose tolerance test simulator")
+            st.subheader("Oral glucose tolerance test")
             
             options = ['normal', 't2dm']
             pars = st.selectbox("Model parameters", options=options)
