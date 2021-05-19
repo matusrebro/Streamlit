@@ -10,11 +10,10 @@ from adaptive_control import adaptive_control_app
 
 
 def app():
-    st.title('Simulators of dynamic systems')
-    selections = ['Glucose metabolism', 'Adaptive control for T1DM']
+    st.title("Simulators of dynamic systems")
+    selections = ["Glucose metabolism", "Adaptive control for T1DM"]
     simulationSelection = st.selectbox("Simulation", options=selections)
-    if simulationSelection == 'Glucose metabolism':
+    if simulationSelection == "Glucose metabolism":
         glucose_metabolism_app()
-    elif simulationSelection == 'Adaptive control for T1DM':
+    elif simulationSelection == "Adaptive control for T1DM":
         adaptive_control_app()
-        
