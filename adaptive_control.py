@@ -76,6 +76,170 @@ def adaptive_control_app():
 
     Gb = 7  # basal (estimated) value of glycemia
 
+    with st.beta_expander("Simulation model details"):
+        st.subheader("Model description and equations")
+        st.markdown(r'''
+        Model used to simulate glucose-insulin system is the nonlinear compartment Hovorka model, 
+        which consists of 5 subsystems (glucose and insulin absorption, insulin action, glucose subystem and CGM measruement dynamics) 
+        of total 11 differential equations and 16 parameters. The model has two inputs: glucose intake 
+        $d(t)$ [mmol/min] and insulin administration $v(t)$ [mU/min], and one output: glycemia $G_{CGM}(t)$ [mmol/l].
+        ''')
+        st.markdown(r'Glucose absorption subsystem is described by two differential equations:')
+        st.latex(r'''
+            \begin{array}{ll}
+            \frac{dF(t)}{dt}&=A_{G}\frac{d(t)}{t_{G}}-\frac{F(t)}{t_{G}}\\
+            \frac{dRa(t)}{dt}&=\frac{F(t)}{t_{G}}-\frac{Ra(t)}{t_{G}}
+            \end{array}
+        ''')
+        st.markdown(r'''
+        Where $d(t)$ [mmol/min] is rate of glucose intake, modeled as $d(t)=D\cdot\delta(t-\tau_G)$, 
+        where $\delta$ is Dirac impulse function approximation corresponding to sample rate 
+        and $D$ [mmol] is glucose amount (1 mg=180 mmol for glucose molecule). Further,  $F(t)$ [mmol/min] 
+        is rate of glucose absorption in first compartment, $Ra(t)$ is rate of appearance of 
+        glucose in plasma, $A_G$ [-] is carbohydrate bioavailability and $t_G$ [min] is the time constant of this subsystem. 
+        ''')
+        st.markdown(r'Insulin absorption dynamics is given by:')
+        st.latex(r'''
+            \begin{array}{ll}
+            \frac{dS_{1}(t)}{dt}&=v(t)-\frac{S_{1}(t)}{t_{I}} \\
+            \frac{dS_{2}(t)}{dt}&=\frac{S_{1}(t)}{t_{I}}-\frac{S_{2}(t)}{t_{I}} \\
+            \frac{dI(t)}{dt}&=\frac{S_{2}(t)}{t_I V_I}-k_{I}I(t)
+            \end{array}
+        ''')
+        st.markdown(r'''
+        Where $v(t)$ [mU/min] is rate of insulin intake and is sum of bolus and basal, 
+        $v(t)=v_{bas}(t)+v_{bol}(t)$. Bolus insulin administration is modeled same way as 
+        glucose intake (Dirac impulses). Basal is modeled as constant signal. 
+        ignals $S_1$ and $S_2$ are state variables describing absorption of subcutaneously 
+        administered insulin, $t_I$ [min] is time constant, $I(t)$ [mU/l] is the plasma insulin 
+        concentration, $V_I$ [l] is the distribution volume and $k_I$ [min$^{-1}$] is the fractional elimination rate.
+        ''')
+        st.markdown(r'Insulin action subsystem describes three actions of insulin on glucose kinetics:')
+        st.latex(r'''
+            \begin{array}{ll}
+            \frac{dx_{1}(t)}{dt}&=k_{b1}I(t)-k_{a1}x_{1}(t)\\
+            \frac{dx_{2}(t)}{dt}&=k_{b2}I(t)-k_{a2}x_{2}(t)\\
+            \frac{dx_{3}(t)}{dt}&=k_{b3}I(t)-k_{a3}x_{3}(t)
+            \end{array}
+        ''')
+        st.markdown(r'''
+        Where $x_{1}(t)$ [min$^{-1}$] is rate of remote effect of insulin on glucose transport, 
+        $x_{2}(t)$ [min$^{-1}$] elimination and $x_{3}(t)$ [-] endogenous glucose production. 
+        Dynamics of these effects is given by constants: $k_{a1}$ [min$^{-1}$], $k_{a2}$ [min$^{-1}$], $k_{a3}$ [min$^{-1}$] 
+        (deactivation rate constants) a $k_{b1}$ [min$^{-2}$mU$^{-1}$l], $k_{b2}$ [min$^{-2}$mU$^{-1}$l], 
+        $k_{b3}$ [min$^{-1}$mU$^{-1}$l] (activation rate constants).
+        ''')
+        st.markdown(r'Glucose subsystem describes insulin-glucose interaction with two nonlinear differential equations:')
+        st.latex(r'''
+        \begin{array}{ll}
+        \frac{dQ_{1}(t)}{dt}=&-(F^C_{01}+F_{R})-x_{1}(t)Q_{1}(t)+k_{12}Q_{2}(t)+Ra(t)\\
+                            &+EGP_{0}[1-x_{3}(t)] \\
+        \frac{dQ_{2}(t)}{dt}=&x_{1}(t)Q_{1}(t)-[k_{12}+x_{2}(t)]Q_{2}(t)										
+        \end{array}
+        ''')
+        st.markdown(r'''
+        Where $Q_1$, $Q_2$ represent the masses of glucose in the accessible (where glycemia measurements are made) and 
+        non-accessible compartments (for example muscle tissues), $k_{12}$ [min$^{-1}$] is the transfer rate constant from $Q_2$ to $Q_1$. 
+        Glycemia is given by:
+        ''')
+        st.latex(r'G(t)=\frac{Q_{1}(t)}{V_{G}} ')
+        st.markdown(r'Where $V_G$ [l] is glucose distribution volume. $F^C_{01}$ [mmol/min] represents total non-insulin dependent glucose flux.')
+        st.latex(r'''
+        F^C_{01}=\left\{\begin{array}{ll}
+        F_{01} & G(t)\geq4.5\textrm{ mmol/l} \\
+        F_{01}G(t)/4.5 & \textrm{otherwise} 
+        \end{array} \right.
+        ''')
+        st.markdown(r'$F_{R}$ [mmol/min] represents renal glucose clearance above the glucose concentration threshold of 9~mmol/l:')
+        st.latex(r'''
+        F_{R}=\left\{\begin{array}{ll}
+        0.003(G(t)-9)V_{G} & G(t)\geq9\textrm{ mmol/l} \\
+        0 & \textrm{otherwise} 
+        \end{array} \right.
+        ''')
+        st.markdown(r'The last equation represents dynamics or delay in glycemia measurement which is modeled by first order dynamics: ')
+        st.latex(r'\frac{dG_{CGM}(t)}{dt}=\frac{G(t)}{t_{CGM}}-\frac{G_{CGM}(t)}{t_{CGM}}')
+        st.markdown(r'''
+        Where $G_{CGM}(t)$ [mmol/l] is the final output of the system = measured glycemia and $t_{CGM}$ [min] 
+        is time constant which governs the delay between actual and measured glycemia
+        ''')
+
+    with st.beta_expander("Display parameter values"):
+        # st.write(model.parameters)
+        """
+                t_I,
+                V_I,
+                k_I,
+                A_G,
+                t_G,
+                k_12,
+                V_G,
+                EGP_0,
+                F_01,
+                k_b1,
+                k_b2,
+                k_b3,
+                k_a1,
+                k_a2,
+                k_a3,
+                t_cgm,
+                """
+        st.latex(
+            r"""
+                    \begin{array}{lll}
+                    t_I &= """
+            + str(round(Hp[0], 2))
+            + r"""& \textrm{[min]} \\
+                    V_I &= """
+            + format(Hp[1], ".2f")
+            + r"""& \textrm{[l]} \\
+                    k_I &= """
+            + str(round(Hp[2], 2))
+            + r"""& \textrm{[l/min]} \\
+                    A_{G} &= """
+            + str(round(Hp[3], 2))
+            + r"""& \textrm{[-]} \\
+                    t_{G} &= """
+            + str(round(Hp[4], 2))
+            + r"""& \textrm{[min]} \\
+                    k_{12} &= """
+            + format(Hp[5], ".2e")
+            + r"""& \textrm{[min]} \\
+                    V_{G} &= """
+            + str(round(Hp[6], 2))
+            + r"""& \textrm{[l]} \\
+                    EGP_{0} &= """
+            + str(round(Hp[7], 2))
+            + r"""& \textrm{[mmol/min]} \\
+                    F_{01} &= """
+            + str(round(Hp[8], 2))
+            + r"""& \textrm{[mmol/min]} \\
+                    k_{b1} &= """
+            + format(Hp[9], ".2e")
+            + r"""& \textrm{[min$^{-2}$mU$^{-1}$l]} \\
+                    k_{b2} &= """
+            + format(Hp[10], ".2e")
+            + r"""& \textrm{[min$^{-2}$mU$^{-1}$l]} \\
+                    k_{b3} &= """
+            + format(Hp[11], ".2e")
+            + r"""& \textrm{[min$^{-1}$mU$^{-1}$l]} \\
+                    k_{a1} &= """
+            + format(Hp[12], ".2e")
+            + r"""& \textrm{[1/min]} \\
+                    k_{a2} &= """
+            + format(Hp[13], ".2e")
+            + r"""& \textrm{[1/min]} \\
+                    k_{a3} &= """
+            + format(Hp[14], ".2e")
+            + r"""& \textrm{[1/min]} \\
+                    t_{CGM} &= """
+            + str(round(Hp[15], 2))
+            + r"""& \textrm{[min]} \\
+                    \end{array}
+                    """
+        )
+
+
     st.subheader("Modify reference model:")
     st.latex(r"W_m(s)=\frac{a_{0m}}{s^2 + a_{1m} s + a_{0m}}")
     col_ref_model = st.beta_columns(2)
@@ -102,7 +266,7 @@ def adaptive_control_app():
 
     with st.beta_expander("Reference model step response"):
         plot_ref_model_step_response()
-    st.subheader("Change shapem amplitude and period of reference signal")
+    st.subheader("Change shape, amplitude and period of reference signal")
     col_ref_signal_choice = st.beta_columns(3)
     ref_signal_options = ["sinewave", "square", "sawtooth"]
 
@@ -342,3 +506,70 @@ def adaptive_control_app():
         st.plotly_chart(fig)
 
     plot_adaptive_control_sim()
+
+    def plot_controller_parameters():
+        st.markdown(r'Evolution of $\Theta_d(t)$')
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=np.squeeze(tt / 60 / 24),
+                y=x[:, 26],
+                name=r"$\Theta_d$",
+            ),
+        )
+        fig.layout.update(
+            #title_text="Time evolution of controller parameters",
+            xaxis_rangeslider_visible=False,
+            showlegend=False,
+            autosize=False,
+            height=400,
+            width=800,
+        )
+        fig.update_xaxes(title_text="time [days]")
+        fig.update_yaxes(title_text="parameter value")
+        st.plotly_chart(fig)
+        st.markdown(r'Evolution of $\Theta_{1-4}(t)$')
+        fig = go.Figure()
+        for k in range(4):
+            fig.add_trace(
+                go.Scatter(
+                    x=np.squeeze(tt / 60 / 24),
+                    y=x[:, 27+k],
+                    name="theta"+str(k+1),
+                ),
+            )
+        fig.layout.update(
+            #title_text="Time evolution of controller parameters",
+            xaxis_rangeslider_visible=False,
+            showlegend=True,
+            autosize=False,
+            height=400,
+            width=800,
+        )
+        fig.update_xaxes(title_text="time [days]")
+        fig.update_yaxes(title_text="parameter value")
+        st.plotly_chart(fig)
+        st.markdown(r'Evolution of $\Theta_{5-6}(t)$')
+        fig = go.Figure()
+        for k in range(2):
+            fig.add_trace(
+                go.Scatter(
+                    x=np.squeeze(tt / 60 / 24),
+                    y=x[:, 27+k+4],
+                    name="theta"+str(k+1+4),
+                ),
+            )
+        fig.layout.update(
+            #title_text="Time evolution of controller parameters",
+            xaxis_rangeslider_visible=False,
+            showlegend=True,
+            autosize=False,
+            height=400,
+            width=800,
+        )
+        fig.update_xaxes(title_text="time [days]")
+        fig.update_yaxes(title_text="parameter value")
+        st.plotly_chart(fig)
+
+    with st.beta_expander('Time evolution of adapting parameters'):
+        plot_controller_parameters()
