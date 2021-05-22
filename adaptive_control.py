@@ -310,7 +310,7 @@ def adaptive_control_app():
         fig.update_yaxes(title_text="[mmol/L]")
         st.plotly_chart(fig)
 
-    with st.beta_expander("Reference model response to reference isgnal"):
+    with st.beta_expander("Reference model response to reference signal"):
         plot_ref_model_response()
 
     with st.beta_expander("Control algorithm details"):
@@ -409,6 +409,7 @@ def adaptive_control_app():
         x, u, ud, vb = sim_MRAC(tt, Hp, dsigm, dsigc, r, Gb, rm_list)
         return x, u, ud, vb
 
+    data_load_state = st.text("Simulation in progress...")
     x, u, ud, vb = sim_adaptive_control(
         tt,
         Hp,
@@ -418,6 +419,7 @@ def adaptive_control_app():
         Gb,
         [0.05, 0.00035],
     )
+    data_load_state.text("Simulation in progress...done")
     # adaptive control simulation
     if st.button("Re-run simulation"):
         data_load_state = st.text("Simulation in progress...")
