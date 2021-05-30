@@ -78,112 +78,150 @@ def adaptive_control_app():
 
     with st.beta_expander("Simulation model details"):
         st.subheader("Model description and equations")
-        st.markdown(r'''
+        st.markdown(
+            r"""
         Model used to simulate glucose-insulin system is the nonlinear compartment Hovorka model, 
         which consists of 5 subsystems (glucose and insulin absorption, insulin action, glucose subystem and CGM measruement dynamics) 
         of total 11 differential equations and 16 parameters. The model has two inputs: glucose intake 
         $d(t)$ [mmol/min] and insulin administration $v(t)$ [mU/min], and one output: glycemia $G_{CGM}(t)$ [mmol/l].
-        ''')
-        st.markdown(r'Glucose absorption subsystem is described by two differential equations:')
-        st.latex(r'''
+        """
+        )
+        st.markdown(
+            r"Glucose absorption subsystem is described by two differential equations:"
+        )
+        st.latex(
+            r"""
             \begin{array}{ll}
             \frac{dF(t)}{dt}&=A_{G}\frac{d(t)}{t_{G}}-\frac{F(t)}{t_{G}}\\
             \frac{dRa(t)}{dt}&=\frac{F(t)}{t_{G}}-\frac{Ra(t)}{t_{G}}
             \end{array}
-        ''')
-        st.markdown(r'''
+        """
+        )
+        st.markdown(
+            r"""
         Where $d(t)$ [mmol/min] is rate of glucose intake, modeled as $d(t)=D\cdot\delta(t-\tau_G)$, 
         where $\delta$ is Dirac impulse function approximation corresponding to sample rate 
         and $D$ [mmol] is glucose amount (1 mg=180 mmol for glucose molecule). Further,  $F(t)$ [mmol/min] 
         is rate of glucose absorption in first compartment, $Ra(t)$ is rate of appearance of 
         glucose in plasma, $A_G$ [-] is carbohydrate bioavailability and $t_G$ [min] is the time constant of this subsystem. 
-        ''')
-        st.markdown(r'Insulin absorption dynamics is given by:')
-        st.latex(r'''
+        """
+        )
+        st.markdown(r"Insulin absorption dynamics is given by:")
+        st.latex(
+            r"""
             \begin{array}{ll}
             \frac{dS_{1}(t)}{dt}&=v(t)-\frac{S_{1}(t)}{t_{I}} \\
             \frac{dS_{2}(t)}{dt}&=\frac{S_{1}(t)}{t_{I}}-\frac{S_{2}(t)}{t_{I}} \\
             \frac{dI(t)}{dt}&=\frac{S_{2}(t)}{t_I V_I}-k_{I}I(t)
             \end{array}
-        ''')
-        st.markdown(r'''
+        """
+        )
+        st.markdown(
+            r"""
         Where $v(t)$ [mU/min] is rate of insulin intake and is sum of bolus and basal, 
         $v(t)=v_{bas}(t)+v_{bol}(t)$. Bolus insulin administration is modeled same way as 
         glucose intake (Dirac impulses). Basal is modeled as constant signal. 
         ignals $S_1$ and $S_2$ are state variables describing absorption of subcutaneously 
         administered insulin, $t_I$ [min] is time constant, $I(t)$ [mU/l] is the plasma insulin 
         concentration, $V_I$ [l] is the distribution volume and $k_I$ [min$^{-1}$] is the fractional elimination rate.
-        ''')
-        st.markdown(r'Insulin action subsystem describes three actions of insulin on glucose kinetics:')
-        st.latex(r'''
+        """
+        )
+        st.markdown(
+            r"Insulin action subsystem describes three actions of insulin on glucose kinetics:"
+        )
+        st.latex(
+            r"""
             \begin{array}{ll}
             \frac{dx_{1}(t)}{dt}&=k_{b1}I(t)-k_{a1}x_{1}(t)\\
             \frac{dx_{2}(t)}{dt}&=k_{b2}I(t)-k_{a2}x_{2}(t)\\
             \frac{dx_{3}(t)}{dt}&=k_{b3}I(t)-k_{a3}x_{3}(t)
             \end{array}
-        ''')
-        st.markdown(r'''
+        """
+        )
+        st.markdown(
+            r"""
         Where $x_{1}(t)$ [min$^{-1}$] is rate of remote effect of insulin on glucose transport, 
         $x_{2}(t)$ [min$^{-1}$] elimination and $x_{3}(t)$ [-] endogenous glucose production. 
         Dynamics of these effects is given by constants: $k_{a1}$ [min$^{-1}$], $k_{a2}$ [min$^{-1}$], $k_{a3}$ [min$^{-1}$] 
         (deactivation rate constants) a $k_{b1}$ [min$^{-2}$mU$^{-1}$l], $k_{b2}$ [min$^{-2}$mU$^{-1}$l], 
         $k_{b3}$ [min$^{-1}$mU$^{-1}$l] (activation rate constants).
-        ''')
-        st.markdown(r'Glucose subsystem describes insulin-glucose interaction with two nonlinear differential equations:')
-        st.latex(r'''
+        """
+        )
+        st.markdown(
+            r"Glucose subsystem describes insulin-glucose interaction with two nonlinear differential equations:"
+        )
+        st.latex(
+            r"""
         \begin{array}{ll}
         \frac{dQ_{1}(t)}{dt}=&-(F^C_{01}+F_{R})-x_{1}(t)Q_{1}(t)+k_{12}Q_{2}(t)+Ra(t)\\
                             &+EGP_{0}[1-x_{3}(t)] \\
         \frac{dQ_{2}(t)}{dt}=&x_{1}(t)Q_{1}(t)-[k_{12}+x_{2}(t)]Q_{2}(t)										
         \end{array}
-        ''')
-        st.markdown(r'''
+        """
+        )
+        st.markdown(
+            r"""
         Where $Q_1$, $Q_2$ represent the masses of glucose in the accessible (where glycemia measurements are made) and 
         non-accessible compartments (for example muscle tissues), $k_{12}$ [min$^{-1}$] is the transfer rate constant from $Q_2$ to $Q_1$. 
         Glycemia is given by:
-        ''')
-        st.latex(r'G(t)=\frac{Q_{1}(t)}{V_{G}} ')
-        st.markdown(r'Where $V_G$ [l] is glucose distribution volume. $F^C_{01}$ [mmol/min] represents total non-insulin dependent glucose flux.')
-        st.latex(r'''
+        """
+        )
+        st.latex(r"G(t)=\frac{Q_{1}(t)}{V_{G}} ")
+        st.markdown(
+            r"Where $V_G$ [l] is glucose distribution volume. $F^C_{01}$ [mmol/min] represents total non-insulin dependent glucose flux."
+        )
+        st.latex(
+            r"""
         F^C_{01}=\left\{\begin{array}{ll}
         F_{01} & G(t)\geq4.5\textrm{ mmol/l} \\
         F_{01}G(t)/4.5 & \textrm{otherwise} 
         \end{array} \right.
-        ''')
-        st.markdown(r'$F_{R}$ [mmol/min] represents renal glucose clearance above the glucose concentration threshold of 9~mmol/l:')
-        st.latex(r'''
+        """
+        )
+        st.markdown(
+            r"$F_{R}$ [mmol/min] represents renal glucose clearance above the glucose concentration threshold of 9~mmol/l:"
+        )
+        st.latex(
+            r"""
         F_{R}=\left\{\begin{array}{ll}
         0.003(G(t)-9)V_{G} & G(t)\geq9\textrm{ mmol/l} \\
         0 & \textrm{otherwise} 
         \end{array} \right.
-        ''')
-        st.markdown(r'The last equation represents dynamics or delay in glycemia measurement which is modeled by first order dynamics: ')
-        st.latex(r'\frac{dG_{CGM}(t)}{dt}=\frac{G(t)}{t_{CGM}}-\frac{G_{CGM}(t)}{t_{CGM}}')
-        st.markdown(r'''
+        """
+        )
+        st.markdown(
+            r"The last equation represents dynamics or delay in glycemia measurement which is modeled by first order dynamics: "
+        )
+        st.latex(
+            r"\frac{dG_{CGM}(t)}{dt}=\frac{G(t)}{t_{CGM}}-\frac{G_{CGM}(t)}{t_{CGM}}"
+        )
+        st.markdown(
+            r"""
         Where $G_{CGM}(t)$ [mmol/l] is the final output of the system = measured glycemia and $t_{CGM}$ [min] 
         is time constant which governs the delay between actual and measured glycemia
-        ''')
+        """
+        )
 
     with st.beta_expander("Display parameter values"):
         # st.write(model.parameters)
         """
-                t_I,
-                V_I,
-                k_I,
-                A_G,
-                t_G,
-                k_12,
-                V_G,
-                EGP_0,
-                F_01,
-                k_b1,
-                k_b2,
-                k_b3,
-                k_a1,
-                k_a2,
-                k_a3,
-                t_cgm,
-                """
+        t_I,
+        V_I,
+        k_I,
+        A_G,
+        t_G,
+        k_12,
+        V_G,
+        EGP_0,
+        F_01,
+        k_b1,
+        k_b2,
+        k_b3,
+        k_a1,
+        k_a2,
+        k_a3,
+        t_cgm,
+        """
         st.latex(
             r"""
                     \begin{array}{lll}
@@ -239,8 +277,7 @@ def adaptive_control_app():
                     """
         )
 
-
-    st.subheader("Modify reference model:")
+    st.subheader("Reference model:")
     st.latex(r"W_m(s)=\frac{a_{0m}}{s^2 + a_{1m} s + a_{0m}}")
     col_ref_model = st.beta_columns(2)
     a1m = col_ref_model[0].number_input(r"a1m", 0.01, 0.1, 0.05)
@@ -259,7 +296,7 @@ def adaptive_control_app():
 
     def plot_ref_model_step_response():
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=t, y=np.squeeze(y), name="step response"))
+        fig.add_trace(go.Scatter(x=t / 60, y=np.squeeze(y), name="step response"))
         fig.update_xaxes(title_text="time [hours]")
         fig.update_yaxes(title_text="Reference model output [mmol/L]")
         st.plotly_chart(fig)
@@ -404,9 +441,132 @@ def adaptive_control_app():
 
     rm_list = [a1m, a0m]
 
+    with st.beta_expander("Control algorithm parameters"):
+        st.subheader("Auxiliary filter denominator")
+        st.latex(r"\Lambda(s)=s^2 + \lambda_{1} s + \lambda_{0}")
+        col_aux_filter = st.beta_columns(2)
+        lambda1 = col_aux_filter[0].number_input(r"lambda1", 0.01, 0.5, 0.2)
+        lambda0 = col_aux_filter[1].number_input(
+            r"lambda0", 0.001, 0.1, 0.01, step=0.01  # , format="%.6f"
+        )
+        st.subheader(
+            "Rarameter for SPR (Strictly Positive Real) reference model in adaptation law:"
+        )
+        st.latex(
+            r"""
+                 \rho \text{ must be such that } W_m(s)(s+\rho) \text{ is strictly positive real function which is satisfied when } 
+                 \rho<a_{1m} \text{and so} \rho< """
+            + str(a1m)
+            + """
+                 """
+        )
+        ro = st.number_input(r"rho", 0.001, a1m, 0.01)
+        st.subheader("Sigma-modified Lyapunov adaptive law parameters:")
+        st.text("Adaptation law")
+        st.latex(
+            r"""
+        \begin{array}{ll}
+        \dot{\Theta}(t)&=\frac{\Gamma \omega_f(t) e_1(t)}{1+\omega^T_f(t)\omega_f(t)} - \sigma_s \Gamma \Theta(t)\\
+        \sigma_s(t) &= \left\{ 
+        \begin{array}{l l}
+        0 & \quad \text{if } \left|\Theta(t)\right|\leq M_0  \\
+        \left(\frac{\left|\Theta(t)\right|}{M_0}-1\right)^{q_0} \sigma_0 & \quad \text{if } M_0 < \left|\Theta(t)\right|\leq 2M_0  \\
+        \sigma_0 & \quad \text{if } \left|\Theta(t)\right|> 2M_0
+        \end{array} \right.
+        \end{array}
+        """
+        )
+        st.latex(
+            r"\text{Adaptation gain: }\Gamma = diag(\gamma_1, \gamma_2, \gamma_3, \gamma_4 ,\gamma_5, \gamma_6)"
+        )
+        col_adapt_gain1 = st.beta_columns(3)
+        col_adapt_gain1[0].latex(r"\gamma_1")
+        gamma1 = col_adapt_gain1[0].number_input(r"", 0.01, 1.0, 0.1)
+        col_adapt_gain1[1].latex(r"\gamma_2")
+        gamma2 = col_adapt_gain1[1].number_input(r"  ", 0.001, 0.1, 0.01)
+        col_adapt_gain1[2].latex(r"\gamma_3")
+        gamma3 = col_adapt_gain1[2].number_input(r"   ", 0.01, 1.0, 0.1)
+        col_adapt_gain2 = st.beta_columns(3)
+        col_adapt_gain2[0].latex(r"\gamma_4")
+        gamma4 = col_adapt_gain2[0].number_input(r"", 0.001, 0.1, 0.01)
+        col_adapt_gain2[1].latex(r"\gamma_5")
+        gamma5 = col_adapt_gain2[1].number_input(r" ", 1, 100, 50)
+        col_adapt_gain2[2].latex(r"\gamma_6")
+        gamma6 = col_adapt_gain2[2].number_input(r"  ", 1e3, 10e3, 5e3)
+        st.text("Sigma-modification parameters:")
+        col_sigma_mod = st.beta_columns(3)
+        col_sigma_mod[0].latex(r"M_0")
+        M0 = col_sigma_mod[0].number_input(" ", 50, 150, 100)
+        col_sigma_mod[1].latex(r"q_0")
+        q0 = col_sigma_mod[1].number_input("  ", 0.5, 1.5, 1.0)
+        col_sigma_mod[2].latex(r"\sigma_0")
+        sigma0 = col_sigma_mod[2].number_input("   ", 0.5, 1.5, 1.0)
+
+        st.subheader(
+            "Sigma-modified heuristic gradient-based adaptation law (disturbance rejection):"
+        )
+        st.text("Adaptation law")
+        st.latex(
+            r"""
+            \begin{array}{ll}
+            \dot{\Theta}_d(t)&=-\frac{\gamma d(t)[y(t)-y_m(t)]}{1+d^2(t)}  - \sigma_d(t) \gamma \Theta_d(t)\\
+            \sigma_d(t) &= \left\{ 
+            \begin{array}{l l}
+            0 & \quad \text{if } \left|\Theta_d(t)\right|\leq M_{0d}  \\
+            \left(\frac{\left|\Theta_d(t)\right|}{M_{0d}}-1\right)^{q_0} \sigma_{0d} & \quad \text{if } M_{0d} < \left|\Theta_d(t)\right|\leq 2M_{0d}  \\
+            \sigma_{0d} & \quad \text{if } \left|\Theta_d(t)\right|> 2M_{0d}
+            \end{array} \right.
+            \end{array}
+            """
+        )
+        st.latex(r"\text{Adaptaion gain }\gamma")
+        gamma = st.number_input(" ", 1, 10, 5)
+        st.text("Sigma-modification parameters:")
+        col_sigma_mod_dist = st.beta_columns(2)
+        col_sigma_mod_dist[0].latex(r"M_{0d}")
+        M0d = col_sigma_mod_dist[0].number_input(" ", 500, 1500, 1000)
+        col_sigma_mod_dist[1].latex(r"\sigma_d")
+        sigma0d = col_sigma_mod_dist[1].number_input("  ", 500, 1500, 1000)
+    Gamma = [gamma1, gamma2, gamma3, gamma4, gamma5, gamma6]
+    lambdapar = [lambda1, lambda0]
+
     @st.cache
-    def sim_adaptive_control(tt, Hp, dsigm, dsigc, r, Gb, rm_list):
-        x, u, ud, vb = sim_MRAC(tt, Hp, dsigm, dsigc, r, Gb, rm_list)
+    def sim_adaptive_control(
+        tt,
+        Hp,
+        dsigm,
+        dsigc,
+        r,
+        Gb,
+        rm_list,
+        lambdapar,
+        ro,
+        Gamma,
+        M0,
+        q0,
+        sigma0,
+        gamma,
+        M0d,
+        sigma0d,
+    ):
+        x, u, ud, vb = sim_MRAC(
+            tt,
+            Hp,
+            dsigm,
+            dsigc,
+            r,
+            Gb,
+            rm_list,
+            lambdapar,
+            ro,
+            Gamma,
+            M0,
+            q0,
+            sigma0,
+            gamma,
+            M0d,
+            sigma0d,
+        )
         return x, u, ud, vb
 
     data_load_state = st.text("Simulation in progress...")
@@ -415,15 +575,41 @@ def adaptive_control_app():
         Hp,
         dsigm,
         dsigc,
-        -0.5 * signal.square(tt / 24 * 60 * 2 * np.pi),
+        -0.5 * signal.square(tt / 24 / 60 * 2 * np.pi),
         Gb,
         [0.05, 0.00035],
+        [0.2, 0.01],
+        0.01,
+        np.diag([0.1, 0.01, 0.1, 0.01, 50, 5e3]),
+        100,
+        1,
+        1,
+        5,
+        1e3,
+        1e3,
     )
     data_load_state.text("Simulation in progress...done")
     # adaptive control simulation
     if st.button("Re-run simulation"):
         data_load_state = st.text("Simulation in progress...")
-        x, u, ud, vb = sim_adaptive_control(tt, Hp, dsigm, dsigc, r, Gb, rm_list)
+        x, u, ud, vb = sim_adaptive_control(
+            tt,
+            Hp,
+            dsigm,
+            dsigc,
+            r,
+            Gb,
+            rm_list,
+            lambdapar,
+            ro,
+            Gamma,
+            M0,
+            q0,
+            sigma0,
+            gamma,
+            M0d,
+            sigma0d,
+        )
         data_load_state.text("Simulation in progress...done")
 
     # signals for plotting
@@ -451,7 +637,8 @@ def adaptive_control_app():
                     tt / 60 / 24,
                 ),
                 y=np.ones_like(Gcgm) * 4,
-                name="lowest desired glycemia",
+                name="hypoglycemia",
+                line_color="#00FF00",
             ),
             row=1,
             col=1,
@@ -462,7 +649,8 @@ def adaptive_control_app():
                     tt / 60 / 24,
                 ),
                 y=np.ones_like(Gcgm) * 10,
-                name="highest desired glycemia",
+                name="hyperglycemia",
+                line_color="#00FF00",
             ),
             row=1,
             col=1,
@@ -495,7 +683,7 @@ def adaptive_control_app():
         fig.layout.update(
             title_text="Adaptive control simulation",
             xaxis_rangeslider_visible=False,
-            showlegend=False,
+            showlegend=True,
             autosize=False,
             height=1000,
             width=800,
@@ -510,7 +698,7 @@ def adaptive_control_app():
     plot_adaptive_control_sim()
 
     def plot_controller_parameters():
-        st.markdown(r'Evolution of $\Theta_d(t)$')
+        st.markdown(r"Evolution of $\Theta_d(t)$")
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
@@ -520,7 +708,7 @@ def adaptive_control_app():
             ),
         )
         fig.layout.update(
-            #title_text="Time evolution of controller parameters",
+            # title_text="Time evolution of controller parameters",
             xaxis_rangeslider_visible=False,
             showlegend=False,
             autosize=False,
@@ -530,18 +718,18 @@ def adaptive_control_app():
         fig.update_xaxes(title_text="time [days]")
         fig.update_yaxes(title_text="parameter value")
         st.plotly_chart(fig)
-        st.markdown(r'Evolution of $\Theta_{1-4}(t)$')
+        st.markdown(r"Evolution of $\Theta_{1-4}(t)$")
         fig = go.Figure()
         for k in range(4):
             fig.add_trace(
                 go.Scatter(
                     x=np.squeeze(tt / 60 / 24),
-                    y=x[:, 27+k],
-                    name="theta"+str(k+1),
+                    y=x[:, 27 + k],
+                    name="theta" + str(k + 1),
                 ),
             )
         fig.layout.update(
-            #title_text="Time evolution of controller parameters",
+            # title_text="Time evolution of controller parameters",
             xaxis_rangeslider_visible=False,
             showlegend=True,
             autosize=False,
@@ -551,18 +739,18 @@ def adaptive_control_app():
         fig.update_xaxes(title_text="time [days]")
         fig.update_yaxes(title_text="parameter value")
         st.plotly_chart(fig)
-        st.markdown(r'Evolution of $\Theta_{5-6}(t)$')
+        st.markdown(r"Evolution of $\Theta_{5-6}(t)$")
         fig = go.Figure()
         for k in range(2):
             fig.add_trace(
                 go.Scatter(
                     x=np.squeeze(tt / 60 / 24),
-                    y=x[:, 27+k+4],
-                    name="theta"+str(k+1+4),
+                    y=x[:, 27 + k + 4],
+                    name="theta" + str(k + 1 + 4),
                 ),
             )
         fig.layout.update(
-            #title_text="Time evolution of controller parameters",
+            # title_text="Time evolution of controller parameters",
             xaxis_rangeslider_visible=False,
             showlegend=True,
             autosize=False,
@@ -573,5 +761,5 @@ def adaptive_control_app():
         fig.update_yaxes(title_text="parameter value")
         st.plotly_chart(fig)
 
-    with st.beta_expander('Time evolution of adapting parameters'):
+    with st.beta_expander("Time evolution of adapting parameters"):
         plot_controller_parameters()

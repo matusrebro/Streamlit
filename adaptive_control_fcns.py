@@ -3,7 +3,26 @@ import numpy as np
 from scipy.integrate import odeint
 
 
-def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
+def fcn_DPmrac2(
+    x,
+    t,
+    p,
+    d,
+    df,
+    r,
+    Gb,
+    vb,
+    rm_list,
+    lambdapar,
+    ro,
+    Gamma,
+    M0,
+    q0,
+    sigma0,
+    gamma,
+    M0d,
+    sigma0d,
+):
     x = np.reshape(x, (x.shape[0], 1))
     D1, D2, S1, S2, I, x1, x2, x3, Q1, Q2, Gcgm = x[0:11]
     xm = x[11:13]
@@ -54,8 +73,9 @@ def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
     y = Gcgm - Gb
 
     # auxiliary filter parameters
-    lambda0 = 0.01
-    lambda1 = 0.2
+    lambda1, lambda0 = lambdapar
+    # lambda0 = 0.01
+    # lambda1 = 0.2
     Al = np.array([[0, 1], [-lambda0, -lambda1]])
     bl = np.array([[0], [1]])
     cl = np.array([[0, 1], [1, 0]])
@@ -72,7 +92,7 @@ def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
     omega[5:, 0] = r
 
     # parameter for SPR (Strictly Positive Real) reference model in adaptation law
-    ro = 0.01
+    # ro = 0.01
 
     # a priori known sign of gain of our controlled system
     zn = -1
@@ -84,10 +104,10 @@ def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
     e1 = y - ym - ed
 
     # adaptation law parameters (Lyapunov part)
-    Gamma = np.diag([0.1, 0.01, 0.1, 0.01, 50, 5e3])
-    M0 = 100
-    q0 = 1
-    sigma0 = 1
+    # Gamma = np.diag([0.1, 0.01, 0.1, 0.01, 50, 5e3])
+    # M0 = 100
+    # q0 = 1
+    # sigma0 = 1
 
     # sigma modification of adaptation law (Lyapunov part)
     sigmas = 0
@@ -99,9 +119,9 @@ def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
         sigmas = sigma0
 
     # adaptation law parameters (disturbance rejection part)
-    gamma = 5
-    M0d = 1000
-    sigma0d = 1e3
+    # gamma = 5
+    # M0d = 1000
+    # sigma0d = 1e3
 
     # sigma modification of adaptation law (disturbance rejection part)
     sigmad = 0
@@ -194,7 +214,24 @@ def fcn_DPmrac2(x, t, p, d, df, r, Gb, vb, rm_list):
     return x_dot
 
 
-def sim_MRAC(t, p, dsigm, dsigc, r, Gb, rm_list):
+def sim_MRAC(
+    t,
+    p,
+    dsigm,
+    dsigc,
+    r,
+    Gb,
+    rm_list,
+    lambdapar,
+    ro,
+    Gamma,
+    M0,
+    q0,
+    sigma0,
+    gamma,
+    M0d,
+    sigma0d,
+):
     (
         t_I,
         V_I,
@@ -279,6 +316,15 @@ def sim_MRAC(t, p, dsigm, dsigc, r, Gb, rm_list):
                 Gb,
                 vb,
                 rm_list,
+                lambdapar,
+                ro,
+                Gamma,
+                M0,
+                q0,
+                sigma0,
+                gamma,
+                M0d,
+                sigma0d,
             ),
         )
         x[i, :] = y[-1, :]
