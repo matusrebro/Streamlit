@@ -6,5 +6,4 @@ numpy
 pandas
 scipy
 matplotlib
-time
 sklearn

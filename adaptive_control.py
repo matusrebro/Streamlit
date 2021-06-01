@@ -8,7 +8,7 @@ from adaptive_control_fcns import sim_MRAC
 import matplotlib.pyplot as plt
 from scipy import signal
 from control_systems import lin_model
-import time
+# import time
 
 
 def adaptive_control_app():
@@ -604,7 +604,7 @@ def adaptive_control_app():
     col_rerun_sim = st.beta_columns(2)
     if col_rerun_sim[0].button("Re-run simulation"):
         
-        start_time = time.time()
+        # start_time = time.time()
         data_load_state = st.text("Simulation in progress...")
         x, u, ud, vb = sim_adaptive_control(
             tt,
@@ -625,7 +625,7 @@ def adaptive_control_app():
             sigma0d,
         )
         data_load_state.text("Simulation in progress...done")
-        st.text("Simulation took %s seconds " % (time.time() - start_time))
+        # st.text("Simulation took %s seconds " % (time.time() - start_time))
         
     col_rerun_sim[1].text('Note: This may take more than 5 minutes \nwhen run from Heroku')
     # signals for plotting
