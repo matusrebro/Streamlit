@@ -2,7 +2,7 @@ import landing_page
 import stonks
 import stonks_portfolio
 import simulations
-import prediction
+import machine_learning
 import streamlit as st
 
 st.set_page_config(
@@ -17,7 +17,7 @@ PAGES = {
     "Stock info": stonks,
     "Stocks portfolio": stonks_portfolio,
     "Simulators": simulations,
-    "Prediction showcase": prediction,
+    "Machine learning": machine_learning,
 }
 
 st.sidebar.title("Navigation")

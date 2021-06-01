@@ -8,11 +8,11 @@ import pandas as pd
 from prediction_fcns import arma
 
 
-def app():
+def prediction_app():
     START = "2015-01-01"
     TODAY = date.today().strftime("%Y-%m-%d")
 
-    st.title("Single stock info and indices")
+    st.subheader("Stock price forecast")
 
     selected_stock = st.text_input("Enter stock ticker", "MSFT")
 
