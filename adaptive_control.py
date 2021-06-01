@@ -8,6 +8,7 @@ from adaptive_control_fcns import sim_MRAC
 import matplotlib.pyplot as plt
 from scipy import signal
 from control_systems import lin_model
+import time
 
 
 def adaptive_control_app():
@@ -530,7 +531,7 @@ def adaptive_control_app():
     Gamma = [gamma1, gamma2, gamma3, gamma4, gamma5, gamma6]
     lambdapar = [lambda1, lambda0]
 
-    @st.cache
+    @st.cache(suppress_st_warning=True)
     def sim_adaptive_control(
         tt,
         Hp,
@@ -570,6 +571,7 @@ def adaptive_control_app():
         return x, u, ud, vb
 
     data_load_state = st.text("Simulation in progress...")
+    start_time = time.time()
     x, u, ud, vb = sim_adaptive_control(
         tt,
         Hp,
@@ -589,6 +591,7 @@ def adaptive_control_app():
         1e3,
     )
     data_load_state.text("Simulation in progress...done")
+    st.text("Simulation took %s seconds " % (time.time() - start_time))
     # adaptive control simulation
     if st.button("Re-run simulation"):
         data_load_state = st.text("Simulation in progress...")
@@ -638,7 +641,7 @@ def adaptive_control_app():
                 ),
                 y=np.ones_like(Gcgm) * 4,
                 name="hypoglycemia",
-                line_color="#00FF00",
+                line_color="#FF0000",
             ),
             row=1,
             col=1,

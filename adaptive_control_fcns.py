@@ -1,5 +1,5 @@
 import numpy as np
-
+import streamlit as st
 from scipy.integrate import odeint
 
 
@@ -346,7 +346,6 @@ def sim_MRAC(
         ud[i, 0] = thetad * df
         if ud[i, 0] > 0:
             ud[i, 0] = 0
-
     # x - state vector
     # u - basal insulin administration [mU/min]
     # ud - disturbance rejection (negative value of bolus administration) [mU/min]
