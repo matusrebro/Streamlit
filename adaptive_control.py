@@ -451,12 +451,13 @@ def adaptive_control_app():
             r"lambda0", 0.001, 0.1, 0.01, step=0.01  # , format="%.6f"
         )
         st.subheader(
-            "Rarameter for SPR (Strictly Positive Real) reference model in adaptation law:"
+            "Parameter for SPR (Strictly Positive Real) reference model in adaptation law:"
         )
-        st.latex(
+        st.markdown(
             r"""
-                 \rho \text{ must be such that } W_m(s)(s+\rho) \text{ is strictly positive real function which is satisfied when } 
-                 \rho<a_{1m} \text{and so} \rho< """
+                 $\rho$ must be such that $W_m(s)(s+\rho)$
+                 is strictly positive real function which is satisfied when 
+                 $\rho<a_{1m}$ and so $\rho<$ """
             + str(a1m)
             + """
                  """
@@ -520,7 +521,7 @@ def adaptive_control_app():
             \end{array}
             """
         )
-        st.latex(r"\text{Adaptaion gain }\gamma")
+        st.latex(r"\text{Adaptation gain }\gamma")
         gamma = st.number_input(" ", 1, 10, 5)
         st.text("Sigma-modification parameters:")
         col_sigma_mod_dist = st.beta_columns(2)
@@ -570,8 +571,14 @@ def adaptive_control_app():
         )
         return x, u, ud, vb
 
-    data_load_state = st.text("Simulation in progress...")
-    start_time = time.time()
+    # data_load_state = st.text("Simulation in progress...")
+    # start_time = time.time()
+    with np.load('default_mrac_sim.npz') as data:
+        x = data['x']
+        u = data['u']
+        ud = data['ud']
+        vb = data['vb']
+    """
     x, u, ud, vb = sim_adaptive_control(
         tt,
         Hp,
@@ -590,10 +597,14 @@ def adaptive_control_app():
         1e3,
         1e3,
     )
-    data_load_state.text("Simulation in progress...done")
-    st.text("Simulation took %s seconds " % (time.time() - start_time))
+    """
+    # data_load_state.text("Simulation in progress...done")
+    # st.text("Simulation took %s seconds " % (time.time() - start_time))
     # adaptive control simulation
-    if st.button("Re-run simulation"):
+    col_rerun_sim = st.beta_columns(2)
+    if col_rerun_sim[0].button("Re-run simulation"):
+        
+        start_time = time.time()
         data_load_state = st.text("Simulation in progress...")
         x, u, ud, vb = sim_adaptive_control(
             tt,
@@ -614,7 +625,9 @@ def adaptive_control_app():
             sigma0d,
         )
         data_load_state.text("Simulation in progress...done")
-
+        st.text("Simulation took %s seconds " % (time.time() - start_time))
+        
+    col_rerun_sim[1].text('Note: This may take more than 5 minutes \nwhen run from Heroku')
     # signals for plotting
     Vbasdata = (u + vb) / 1e3 * 60  # basal insulin [U/h]
     Vboldata = -ud / 1e3 * Ts  # bolus insulin [U]
