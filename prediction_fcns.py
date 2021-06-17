@@ -1,6 +1,22 @@
 import numpy as np
 
 
+def moving_average(y, N):
+    
+    idx_final = y.shape[0]
+    yf = np.zeros([idx_final, 1])
+    ypf = np.zeros([N, 1])
+    ypf[0:N, 0] = y[0:N]
+        
+    for i in range(0, idx_final):
+        if i > 0:
+            ypf = np.roll(ypf, 1)
+            ypf[0, 0] = y[i]
+
+        yf[i] = 1/(N+1) * (y[i]+np.sum(ypf))
+    return yf
+
+
 # prediction N-steps ahead using ARMA (no input) and recursive least squares algorithm for parameter identification
 def arma(y, na, nc, N, fz):
     # data to predict
@@ -55,4 +71,18 @@ def arma(y, na, nc, N, fz):
             ypred[k, 0] = np.dot(h[:, 0], thetak)
         ypredN[i, 0] = ypred[-1, 0]
 
-    return ypredN, theta, thetak
+    return ypredN, theta, thetak, e1
+
+
+def arma_prediction(yp, ep, theta, N):
+    
+    ypred = np.zeros([N, 1])
+    for k in range(N):
+        if k > 0:
+            yp = np.roll(yp, 1)
+            yp[0] = ypred[k - 1]
+            ep = np.roll(ep, 1)
+            ep[0] = 0
+        h = np.hstack((-yp, ep))
+        ypred[k, 0] = np.dot(h, theta)
+    return ypred
