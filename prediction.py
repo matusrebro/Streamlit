@@ -6,6 +6,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from prediction_fcns import arma, moving_average, arma_prediction
+from statsmodels.tsa.stattools import adfuller
 
 
 def prediction_app():
@@ -32,7 +33,7 @@ def prediction_app():
 
     show_moving_avg = st.checkbox('Show moving average')
     if show_moving_avg:
-        ma_order = st.slider('Moving average order', 1, 60, 5)
+        ma_order = st.slider('Moving average order [days]', 1, 60, 30)
         ma_filtered_data = moving_average(data["Close"], ma_order)
 
     if len(data) > 1:
@@ -56,6 +57,12 @@ def prediction_app():
 
         plot_raw_data()
 
+        st.subheader('Augmented Dickey-Fuller test - testing for a unit root')
+        result = adfuller(data["Close"])
+        st.text(f'Test statistic: {result[0]}')
+        st.text(f'P-value: {result[1]}')
+        st.text(f'Test statistics critical values: {result[4]}')
+
         st.subheader("Stock N steps ahead prediction")
 
         st.text("ARMA model")
@@ -66,43 +73,65 @@ def prediction_app():
         fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
 
         pred_load_state = st.text("Running prediction algorithm...")
-        ypredN, theta, thetak, resid = arma(data["Close"], na, nc, N, fz)
+        ypredN, theta, thetak, yhat, resid = arma(data["Close"], na, nc, N, fz)
         pred_load_state.text("Running prediction algorithm...done!")
 
+        """
+        testcols = st.beta_columns(3)
+        testcols[0].write(data["Close"])
+        testcols[1].write(data["Close"][N:])
+        testcols[2].write(ypredN)
+        st.write(theta)
+        st.write(resid)
+        """
         def plot_prediction():
             fig = go.Figure()
             fig.add_trace(
-                go.Scatter(x=data["Date"], y=data["Close"], name="stock_close")
+                go.Scatter(x=data["Date"][N:], y=data["Close"][N:], name="stock_close")
             )
             fig.add_trace(
-                go.Scatter(x=data["Date"], y=np.squeeze(ypredN), name="prediction")
+                go.Scatter(x=data["Date"][N:], y=np.squeeze(ypredN)[:-N], name="prediction")
             )
             fig.layout.update(
                 title_text=f"Prediction {N}-steps/days ahead",
                 xaxis_rangeslider_visible=True,
             )
             st.plotly_chart(fig)
-
+        pred_error = data["Close"][N:]-np.squeeze(ypredN)[:-N]
         plot_prediction()
         # st.write(theta)
-
-        cutoff_at = st.number_input('data cutoff [days]', na+nc, len(data)-N, 300)
-        yp = data["Close"][cutoff_at-na:cutoff_at]
-        ep = resid[cutoff_at-nc:cutoff_at, 0]
-        theta_at_cutoff = theta[cutoff_at, :]
+        st.subheader(f'Prediction of stock evolution {N} steps ahead')
+        cutoff_at = st.number_input('Select day to predict from', na+nc, len(data)-N, 600)
+        yp = data["Close"][cutoff_at-na:cutoff_at][::-1]
+        ep = resid[cutoff_at-nc:cutoff_at, 0][::-1]
+        theta_at_cutoff = theta[cutoff_at-1, :]
         prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
         
+        """
+        st.text('yp')
+        st.write(yp)
+        st.text('ep')
+        st.write(ep)
+        st.text('theta')
+        st.write(theta_at_cutoff)
+        st.write(data["Close"][cutoff_at:cutoff_at+N])
+        st.write(prediction)
+        """
+
+
+
+
         def plot_prediction_after_cutoff():
             fig = go.Figure()
             fig.add_trace(
-                go.Scatter(x=data["Date"][:cutoff_at+N], y=data["Close"][:cutoff_at+N], name="stock_close")
+                go.Scatter(x=data["Date"][cutoff_at:cutoff_at+N], y=data["Close"][cutoff_at:cutoff_at+N], name="stock_close")
             )
             fig.add_trace(
                 go.Scatter(x=data["Date"][cutoff_at:cutoff_at+N], y=np.squeeze(prediction), name="prediction")
             )
             fig.layout.update(
                 title_text=f"Prediction {N}-steps/days ahead",
-                xaxis_rangeslider_visible=True,
+                xaxis_rangeslider_visible=False,
             )
             st.plotly_chart(fig)
         
@@ -118,8 +147,21 @@ def prediction_app():
                 xaxis_rangeslider_visible=True,
             )
             st.plotly_chart(fig)
-        with st.beta_expander("Show residuals"):
+
+        def plot_pred_error():
+            fig = go.Figure()
+            fig.add_trace(
+                go.Scatter(x=data["Date"][N:], y=pred_error, name="residual")
+            )
+            fig.layout.update(
+                title_text=f"Prediction error",
+                xaxis_rangeslider_visible=True,
+            )
+            st.plotly_chart(fig)
+
+        with st.beta_expander("Show residuals and N-step prediction errors"):
             plot_residuals()
+            plot_pred_error()
             
         def plot_parameters():
             fig = go.Figure()

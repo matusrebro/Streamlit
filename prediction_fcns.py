@@ -29,6 +29,7 @@ def arma(y, na, nc, N, fz):
     e1 = np.zeros([idx_final, 1])
     yp = np.zeros([na, 1])
     ep = np.zeros([nc, 1])
+    yhat = np.zeros([idx_final, 1])
     theta = np.zeros([idx_final, na + nc])
     P = np.eye(na + nc) * 1e6
 
@@ -50,8 +51,9 @@ def arma(y, na, nc, N, fz):
                 ep[c - 1, 0] = 0
 
         h = np.vstack((-yp, ep))
-
-        e = y1[i, 0] - np.dot(h[:, 0], theta[i - 1, :])
+        y_hat = np.dot(h[:, 0], theta[i - 1, :])
+        yhat[i, 0] = y_hat
+        e = y1[i, 0] - y_hat
         e1[i, 0] = e
         Y = np.dot(P, h) / (1 + np.dot(np.dot(np.transpose(h), P), h))
         P = (P - np.dot(np.dot(Y, np.transpose(h)), P)) * 1 / fz
@@ -60,6 +62,8 @@ def arma(y, na, nc, N, fz):
 
         yp = np.roll(yp, 1)
         yp[0, 0] = y1[i, 0]
+        ep[0, 0] = e
+        ypred = np.zeros([N, 1])
         ypred = np.zeros([N, 1])
         for k in range(N):
             if k > 0:
@@ -71,7 +75,7 @@ def arma(y, na, nc, N, fz):
             ypred[k, 0] = np.dot(h[:, 0], thetak)
         ypredN[i, 0] = ypred[-1, 0]
 
-    return ypredN, theta, thetak, e1
+    return ypredN, theta, thetak, yhat, e1
 
 
 def arma_prediction(yp, ep, theta, N):
