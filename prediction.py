@@ -66,6 +66,57 @@ def prediction_app():
         st.subheader("Stock N steps ahead prediction")
 
         st.text("ARMA model")
+        with st.beta_expander('Model structure and prediction algorithm'):
+            st.markdown(r'Model output $y(t)$ is given by:')
+            st.latex(r'''
+                     y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                     ''')
+            st.markdown(r'''where $z^{-1}$ is a discrete lag operator, $\varepsilon(t)$ represents 
+                        unknown process dynamics - measurement noises, unmodeled dynamics, etc and $D(z^{-1})$ together with $A(z^{-1})$ are polynomials in the form:''')
+            st.latex(r'''
+                     \begin{array}{l}
+                    A(z^{-1})&=1+a_{1}z^{-1}+\ldots  \\
+                    D(z^{-1})&=1+d_{1}z^{-1}+\ldots  
+                    \end{array}
+                     ''')     
+            st.markdown(r'''
+                        Proposed parameter estimation method is the recursive least-squares (RLS) identification. Using this type of algorithm, 
+                        estimation can be done for every sample period, without using too much of a computational power, 
+                        using only current measurements and few past measurements (depending on model orders). 
+                        General form of RLS algorithm is as follows:
+                        ''')       
+            st.latex(r'''
+                    \begin{array}{ll}
+                    L(t)&=\frac{P(t-1)h(t)}{1+h(t)^TP(t-1)h(t)}  \\
+                    P(t)&=\frac{1}{\lambda}(P(t-1)-L(t)h(t)^TP(t-1)) \\
+                    \theta(t)&=\theta(t-1)+L(t)e(t)
+                    \end{array}
+                     ''')
+            st.markdown(r'''
+                        where $\theta(t)$ is parameter vector to adapt (estimate), $h(t)$ is a vector of regressors 
+                        (containing past measurements and inputs), $e(t)$ is a one step ahead prediction error 
+                        (difference between predicted model output and a actual measurement), $L(t)$ is an adaptation gain, 
+                        $P(t)$ is a dispersion matrix and $\lambda$ is a forgetting factor
+                        ''')
+            st.markdown(r'Parameter vector and regressor vector have the form:')
+            st.latex(r'''
+                    \begin{array}{ll}
+                    \theta^T&= [a_{1} \ldots  d_1 \ldots] \\
+                    h^T&=[-y(t-1) \ldots \varepsilon(t-1) \ldots]
+                    \end{array}
+                     ''')
+            st.markdown(r'''
+                        Regressor vector includes past samples of signal $\varepsilon(t)$, which is not known. 
+                        This signal is estimated:
+                        ''')
+            st.latex(r'''
+                     \varepsilon(t)=e(t)=y(t)-h^T\theta
+                     ''')
+            st.markdown(r'''
+                        Note that the regressor values (specifically $\varepsilon$) are dependent on the identified parameters and 
+                        thus it is no longer called a linear regression but a pseudolinear regression.
+                        ''')
+            
         N = st.number_input("Prediction horizon [days]", 1, 60, 5)
         col_pars = st.beta_columns(3)
         na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
