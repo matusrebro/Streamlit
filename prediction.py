@@ -5,7 +5,7 @@ from plotly import graph_objs as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
-from prediction_fcns import arma, moving_average, arma_prediction
+from prediction_fcns import arma, moving_average, arma_prediction, arima
 from statsmodels.tsa.stattools import adfuller
 
 
@@ -65,68 +65,135 @@ def prediction_app():
 
         st.subheader("Stock N steps ahead prediction")
 
-        st.text("ARMA model")
-        with st.beta_expander('Model structure and prediction algorithm'):
-            st.markdown(r'Model output $y(t)$ is given by:')
-            st.latex(r'''
-                     y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
-                     ''')
-            st.markdown(r'''where $z^{-1}$ is a discrete lag operator, $\varepsilon(t)$ represents 
-                        unknown process dynamics - measurement noises, unmodeled dynamics, etc and $D(z^{-1})$ together with $A(z^{-1})$ are polynomials in the form:''')
-            st.latex(r'''
-                     \begin{array}{l}
-                    A(z^{-1})&=1+a_{1}z^{-1}+\ldots  \\
-                    D(z^{-1})&=1+d_{1}z^{-1}+\ldots  
-                    \end{array}
-                     ''')     
-            st.markdown(r'''
-                        Proposed parameter estimation method is the recursive least-squares (RLS) identification. Using this type of algorithm, 
-                        estimation can be done for every sample period, without using too much of a computational power, 
-                        using only current measurements and few past measurements (depending on model orders). 
-                        General form of RLS algorithm is as follows:
-                        ''')       
-            st.latex(r'''
-                    \begin{array}{ll}
-                    L(t)&=\frac{P(t-1)h(t)}{1+h(t)^TP(t-1)h(t)}  \\
-                    P(t)&=\frac{1}{\lambda}(P(t-1)-L(t)h(t)^TP(t-1)) \\
-                    \theta(t)&=\theta(t-1)+L(t)e(t)
-                    \end{array}
-                     ''')
-            st.markdown(r'''
-                        where $\theta(t)$ is parameter vector to adapt (estimate), $h(t)$ is a vector of regressors 
-                        (containing past measurements and inputs), $e(t)$ is a one step ahead prediction error 
-                        (difference between predicted model output and a actual measurement), $L(t)$ is an adaptation gain, 
-                        $P(t)$ is a dispersion matrix and $\lambda$ is a forgetting factor
-                        ''')
-            st.markdown(r'Parameter vector and regressor vector have the form:')
-            st.latex(r'''
-                    \begin{array}{ll}
-                    \theta^T&= [a_{1} \ldots  d_1 \ldots] \\
-                    h^T&=[-y(t-1) \ldots \varepsilon(t-1) \ldots]
-                    \end{array}
-                     ''')
-            st.markdown(r'''
-                        Regressor vector includes past samples of signal $\varepsilon(t)$, which is not known. 
-                        This signal is estimated:
-                        ''')
-            st.latex(r'''
-                     \varepsilon(t)=e(t)=y(t)-h^T\theta
-                     ''')
-            st.markdown(r'''
-                        Note that the regressor values (specifically $\varepsilon$) are dependent on the identified parameters and 
-                        thus it is no longer called a linear regression but a pseudolinear regression.
-                        ''')
-            
-        N = st.number_input("Prediction horizon [days]", 1, 60, 5)
-        col_pars = st.beta_columns(3)
-        na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
-        nc = col_pars[1].number_input("Order of moving average part", 1, 10, 4)
-        fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
+        models = ['ARMA', 'ARIMA']
+        
+        selected_model = st.selectbox('Prediction model', models)
 
-        pred_load_state = st.text("Running prediction algorithm...")
-        ypredN, theta, thetak, yhat, resid = arma(data["Close"], na, nc, N, fz)
-        pred_load_state.text("Running prediction algorithm...done!")
+        if selected_model == 'ARMA':
+            st.text("ARMA model")
+            with st.beta_expander('Model structure and prediction algorithm'):
+                st.markdown(r'Model output $y(t)$ is given by:')
+                st.latex(r'''
+                        y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        ''')
+                st.markdown(r'''where $z^{-1}$ is a discrete lag operator, $\varepsilon(t)$ represents 
+                            unknown process dynamics - measurement noises, unmodeled dynamics, etc and $D(z^{-1})$ together with $A(z^{-1})$ are polynomials in the form:''')
+                st.latex(r'''
+                        \begin{array}{l}
+                        A(z^{-1})&=1+a_{1}z^{-1}+\ldots  \\
+                        D(z^{-1})&=1+d_{1}z^{-1}+\ldots  
+                        \end{array}
+                        ''')     
+                st.markdown(r'''
+                            Proposed parameter estimation method is the recursive least-squares (RLS) identification. Using this type of algorithm, 
+                            estimation can be done for every sample period, without using too much of a computational power, 
+                            using only current measurements and few past measurements (depending on model orders). 
+                            General form of RLS algorithm is as follows:
+                            ''')       
+                st.latex(r'''
+                        \begin{array}{ll}
+                        L(t)&=\frac{P(t-1)h(t)}{1+h(t)^TP(t-1)h(t)}  \\
+                        P(t)&=\frac{1}{\lambda}(P(t-1)-L(t)h(t)^TP(t-1)) \\
+                        \theta(t)&=\theta(t-1)+L(t)e(t)
+                        \end{array}
+                        ''')
+                st.markdown(r'''
+                            where $\theta(t)$ is parameter vector to adapt (estimate), $h(t)$ is a vector of regressors 
+                            (containing past measurements and inputs), $e(t)$ is a one step ahead prediction error 
+                            (difference between predicted model output and a actual measurement), $L(t)$ is an adaptation gain, 
+                            $P(t)$ is a dispersion matrix and $\lambda$ is a forgetting factor
+                            ''')
+                st.markdown(r'Parameter vector and regressor vector have the form:')
+                st.latex(r'''
+                        \begin{array}{ll}
+                        \theta^T&= [a_{1} \ldots  d_1 \ldots] \\
+                        h^T&=[-y(t-1) \ldots \varepsilon(t-1) \ldots]
+                        \end{array}
+                        ''')
+                st.markdown(r'''
+                            Regressor vector includes past samples of signal $\varepsilon(t)$, which is not known. 
+                            This signal is estimated:
+                            ''')
+                st.latex(r'''
+                        \varepsilon(t)=e(t)=y(t)-h^T\theta
+                        ''')
+                st.markdown(r'''
+                            Note that the regressor values (specifically $\varepsilon$) are dependent on the identified parameters and 
+                            thus it is no longer called a linear regression but a pseudolinear regression.
+                            ''')
+                
+            N = st.number_input("Prediction horizon [days]", 1, 60, 5)
+            col_pars = st.beta_columns(3)
+            na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
+            nc = col_pars[1].number_input("Order of moving average part", 1, 10, 4)
+            fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
 
+            pred_load_state = st.text("Running prediction algorithm...")
+            ypredN, theta, thetak, yhat, resid = arma(data["Close"], na, nc, N, fz)
+            pred_load_state.text("Running prediction algorithm...done!")
+
+        elif selected_model == 'ARIMA':
+            st.text("ARIMA model (todo)")
+            with st.beta_expander('Model structure and prediction algorithm'):
+                st.markdown(r'Model output $y(t)$ is given by:')
+                st.latex(r'''
+                        y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        ''')
+                st.markdown(r'''where $z^{-1}$ is a discrete lag operator, $\varepsilon(t)$ represents 
+                            unknown process dynamics - measurement noises, unmodeled dynamics, etc and $D(z^{-1})$ together with $A(z^{-1})$ are polynomials in the form:''')
+                st.latex(r'''
+                        \begin{array}{l}
+                        A(z^{-1})&=1+a_{1}z^{-1}+\ldots  \\
+                        D(z^{-1})&=1+d_{1}z^{-1}+\ldots  
+                        \end{array}
+                        ''')     
+                st.markdown(r'''
+                            Proposed parameter estimation method is the recursive least-squares (RLS) identification. Using this type of algorithm, 
+                            estimation can be done for every sample period, without using too much of a computational power, 
+                            using only current measurements and few past measurements (depending on model orders). 
+                            General form of RLS algorithm is as follows:
+                            ''')       
+                st.latex(r'''
+                        \begin{array}{ll}
+                        L(t)&=\frac{P(t-1)h(t)}{1+h(t)^TP(t-1)h(t)}  \\
+                        P(t)&=\frac{1}{\lambda}(P(t-1)-L(t)h(t)^TP(t-1)) \\
+                        \theta(t)&=\theta(t-1)+L(t)e(t)
+                        \end{array}
+                        ''')
+                st.markdown(r'''
+                            where $\theta(t)$ is parameter vector to adapt (estimate), $h(t)$ is a vector of regressors 
+                            (containing past measurements and inputs), $e(t)$ is a one step ahead prediction error 
+                            (difference between predicted model output and a actual measurement), $L(t)$ is an adaptation gain, 
+                            $P(t)$ is a dispersion matrix and $\lambda$ is a forgetting factor
+                            ''')
+                st.markdown(r'Parameter vector and regressor vector have the form:')
+                st.latex(r'''
+                        \begin{array}{ll}
+                        \theta^T&= [a_{1} \ldots  d_1 \ldots] \\
+                        h^T&=[-y(t-1) \ldots \varepsilon(t-1) \ldots]
+                        \end{array}
+                        ''')
+                st.markdown(r'''
+                            Regressor vector includes past samples of signal $\varepsilon(t)$, which is not known. 
+                            This signal is estimated:
+                            ''')
+                st.latex(r'''
+                        \varepsilon(t)=e(t)=y(t)-h^T\theta
+                        ''')
+                st.markdown(r'''
+                            Note that the regressor values (specifically $\varepsilon$) are dependent on the identified parameters and 
+                            thus it is no longer called a linear regression but a pseudolinear regression.
+                            ''')
+                
+            N = st.number_input("Prediction horizon [days]", 1, 60, 5)
+            col_pars = st.beta_columns(3)
+            na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
+            nc = col_pars[1].number_input("Order of moving average part", 1, 10, 4)
+            fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
+
+            pred_load_state = st.text("Running prediction algorithm...")
+            ypredN, theta, thetak, yhat, resid = arima(data["Close"], na, nc, N, fz)
+            pred_load_state.text("Running prediction algorithm...done!")
         """
         testcols = st.beta_columns(3)
         testcols[0].write(data["Close"])
@@ -146,8 +213,10 @@ def prediction_app():
             fig.layout.update(
                 title_text=f"Prediction {N}-steps/days ahead",
                 xaxis_rangeslider_visible=True,
+                yaxis_range=[np.min(data["Close"][N:])*0.5, np.max(data["Close"][N:])*1.5]
             )
             st.plotly_chart(fig)
+            
         pred_error = data["Close"][N:]-np.squeeze(ypredN)[:-N]
         plot_prediction()
         # st.write(theta)
@@ -156,7 +225,10 @@ def prediction_app():
         yp = data["Close"][cutoff_at-na:cutoff_at][::-1]
         ep = resid[cutoff_at-nc:cutoff_at, 0][::-1]
         theta_at_cutoff = theta[cutoff_at-1, :]
-        prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
+        if selected_model == 'ARMA':
+            prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
+        elif selected_model == 'ARIMA':
+            prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
         
         """
         st.text('yp')

@@ -96,7 +96,10 @@ def arima(y, na, nc, N, fz):
     ypredN = np.zeros([idx_final, 1])
 
     for i in range(0, idx_final):
-        y1[i, 0] = y[i] - y[i-1]  # I guess
+        if i > 0:
+            y1[i, 0] = y[i] - y[i-1]
+        else:
+            y1[i, 0] = 0
 
         for c in range(1, na + 1):
             if i - c >= 0:
@@ -138,7 +141,7 @@ def arima(y, na, nc, N, fz):
             if k > 0:
                 ypred[k, 0] = ypred[k-1, 0] + ypred_delta[k, 0]  # here should be integrated delta
             else:
-                ypred[k, 0] = y1[i, 0] + ypred_delta[k, 0]
+                ypred[k, 0] = y[i] + ypred_delta[k, 0]
         ypredN[i, 0] = ypred[-1, 0]
 
     return ypredN, theta, thetak, yhat, e1
@@ -155,4 +158,25 @@ def arma_prediction(yp, ep, theta, N):
             ep[0] = 0
         h = np.hstack((-yp, ep))
         ypred[k, 0] = np.dot(h, theta)
+    return ypred
+
+# TODO
+
+def arima_prediction(y, yp, ep, theta, N):
+    # yp - this needs to be delta_y - one step differences
+    # ep - these are residuals
+    ypred = np.zeros([N, 1])
+    ypred_delta = np.zeros([N, 1])
+    for k in range(N):
+        if k > 0:
+            yp = np.roll(yp, 1)
+            yp[0, 0] = ypred_delta[k - 1]
+            ep = np.roll(ep, 1)
+            ep[0, 0] = 0
+        h = np.vstack((-yp, ep))
+        ypred_delta[k, 0] = np.dot(h[:, 0], theta)  # this is predicted delta
+        if k > 0:
+            ypred[k, 0] = ypred[k-1, 0] + ypred_delta[k, 0]  # here should be integrated delta
+        else:
+            ypred[k, 0] = y + ypred_delta[k, 0]
     return ypred
