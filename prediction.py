@@ -5,7 +5,7 @@ from plotly import graph_objs as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
-from prediction_fcns import arma, moving_average, arma_prediction, arima
+from prediction_fcns import arma, moving_average, arma_prediction, arima, arima_prediction
 from statsmodels.tsa.stattools import adfuller
 
 
@@ -137,7 +137,7 @@ def prediction_app():
             with st.beta_expander('Model structure and prediction algorithm'):
                 st.markdown(r'Model output $y(t)$ is given by:')
                 st.latex(r'''
-                        y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        y(t)=\frac{D(z^{-1})}{(1-z^{-1})A(z^{-1})}\varepsilon(t)
                         ''')
                 st.markdown(r'''where $z^{-1}$ is a discrete lag operator, $\varepsilon(t)$ represents 
                             unknown process dynamics - measurement noises, unmodeled dynamics, etc and $D(z^{-1})$ together with $A(z^{-1})$ are polynomials in the form:''')
@@ -147,6 +147,19 @@ def prediction_app():
                         D(z^{-1})&=1+d_{1}z^{-1}+\ldots  
                         \end{array}
                         ''')     
+                st.markdown(r'We can rewrite the model in the form:')
+                st.latex(r'''
+                        y(t)(1-z^{-1})=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        ''')
+                st.markdown(r'which is:')
+                st.latex(r'''
+                        y(t)-y(t-1)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        ''')
+                st.markdown(r'and so the model output is the same as that of ARMA model with model output being is ones step difference:')
+                st.latex(r'''
+                        \Delta y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
+                        ''')
+                st.markdown(r'This means that we can use the same RLS estimation of parameters as in the case of ARMA model')
                 st.markdown(r'''
                             Proposed parameter estimation method is the recursive least-squares (RLS) identification. Using this type of algorithm, 
                             estimation can be done for every sample period, without using too much of a computational power, 
@@ -170,7 +183,7 @@ def prediction_app():
                 st.latex(r'''
                         \begin{array}{ll}
                         \theta^T&= [a_{1} \ldots  d_1 \ldots] \\
-                        h^T&=[-y(t-1) \ldots \varepsilon(t-1) \ldots]
+                        h^T&=[-\Delta y(t-1) \ldots \varepsilon(t-1) \ldots]
                         \end{array}
                         ''')
                 st.markdown(r'''
@@ -178,13 +191,16 @@ def prediction_app():
                             This signal is estimated:
                             ''')
                 st.latex(r'''
-                        \varepsilon(t)=e(t)=y(t)-h^T\theta
+                        \varepsilon(t)=e(t)=\Delta y(t)-h^T\theta
                         ''')
                 st.markdown(r'''
                             Note that the regressor values (specifically $\varepsilon$) are dependent on the identified parameters and 
                             thus it is no longer called a linear regression but a pseudolinear regression.
                             ''')
-                
+                st.markdown(r'To get the actual one step ahead prediction we need to sum up (integrate) the model output:')
+                st.latex(r'''
+                         \hat{y}(t)= h^T\theta + y(t-1)
+                        ''')
             N = st.number_input("Prediction horizon [days]", 1, 60, 5)
             col_pars = st.beta_columns(3)
             na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
@@ -222,13 +238,14 @@ def prediction_app():
         # st.write(theta)
         st.subheader(f'Prediction of stock evolution {N} steps ahead')
         cutoff_at = st.number_input('Select day to predict from', na+nc, len(data)-N, 600)
-        yp = data["Close"][cutoff_at-na:cutoff_at][::-1]
         ep = resid[cutoff_at-nc:cutoff_at, 0][::-1]
         theta_at_cutoff = theta[cutoff_at-1, :]
         if selected_model == 'ARMA':
+            yp = data["Close"][cutoff_at-na:cutoff_at][::-1]
             prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
         elif selected_model == 'ARIMA':
-            prediction = arma_prediction(yp, ep, theta_at_cutoff, N)
+            yp = data["Close"][cutoff_at-na-1:cutoff_at][::-1]
+            prediction = arima_prediction(yp, ep, theta_at_cutoff, N)
         
         """
         st.text('yp')

@@ -160,23 +160,23 @@ def arma_prediction(yp, ep, theta, N):
         ypred[k, 0] = np.dot(h, theta)
     return ypred
 
-# TODO
 
-def arima_prediction(y, yp, ep, theta, N):
-    # yp - this needs to be delta_y - one step differences
-    # ep - these are residuals
+def arima_prediction(yp, ep, theta, N):
+    # yp - these are values of past values of y na+1 long
+    y1 = np.array(yp)[0] # this is y(t)
+    yp = np.diff(yp[::-1])[::-1] # create differences
     ypred = np.zeros([N, 1])
     ypred_delta = np.zeros([N, 1])
     for k in range(N):
         if k > 0:
             yp = np.roll(yp, 1)
-            yp[0, 0] = ypred_delta[k - 1]
+            yp[0] = ypred_delta[k - 1]
             ep = np.roll(ep, 1)
-            ep[0, 0] = 0
-        h = np.vstack((-yp, ep))
-        ypred_delta[k, 0] = np.dot(h[:, 0], theta)  # this is predicted delta
+            ep[0] = 0
+        h = np.hstack((-yp, ep))
+        ypred_delta[k, 0] = np.dot(h, theta)  # this is predicted delta
         if k > 0:
             ypred[k, 0] = ypred[k-1, 0] + ypred_delta[k, 0]  # here should be integrated delta
         else:
-            ypred[k, 0] = y + ypred_delta[k, 0]
+            ypred[k, 0] = y1 + ypred_delta[k, 0]
     return ypred
