@@ -1,6 +1,6 @@
-streamlit
+streamlit==0.89.0
 datetime
-yfinance
+yfinance==0.1.63
 plotly
 numpy
 pandas
