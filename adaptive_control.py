@@ -39,7 +39,7 @@ def adaptive_control_app():
 
     Cdata = dsig * Ts  # carbohydrates [g]
 
-    with st.beta_expander("Show data of carbohydrate intake"):
+    with st.expander("Show data of carbohydrate intake"):
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
@@ -77,7 +77,7 @@ def adaptive_control_app():
 
     Gb = 7  # basal (estimated) value of glycemia
 
-    with st.beta_expander("Simulation model details"):
+    with st.expander("Simulation model details"):
         st.subheader("Model description and equations")
         st.markdown(
             r"""
@@ -203,7 +203,7 @@ def adaptive_control_app():
         """
         )
 
-    with st.beta_expander("Display parameter values"):
+    with st.expander("Display parameter values"):
         # st.write(model.parameters)
         """
         t_I,
@@ -280,7 +280,7 @@ def adaptive_control_app():
 
     st.subheader("Reference model:")
     st.latex(r"W_m(s)=\frac{a_{0m}}{s^2 + a_{1m} s + a_{0m}}")
-    col_ref_model = st.beta_columns(2)
+    col_ref_model = st.columns(2)
     a1m = col_ref_model[0].number_input(r"a1m", 0.01, 0.1, 0.05)
     a0m = col_ref_model[1].number_input(
         r"a0m", 0.0001, 0.001, 0.00035, step=0.00005, format="%.6f"
@@ -302,10 +302,10 @@ def adaptive_control_app():
         fig.update_yaxes(title_text="Reference model output [mmol/L]")
         st.plotly_chart(fig)
 
-    with st.beta_expander("Reference model step response"):
+    with st.expander("Reference model step response"):
         plot_ref_model_step_response()
     st.subheader("Change shape, amplitude and period of reference signal")
-    col_ref_signal_choice = st.beta_columns(3)
+    col_ref_signal_choice = st.columns(3)
     ref_signal_options = ["sinewave", "square", "sawtooth"]
 
     ra = col_ref_signal_choice[0].slider(
@@ -348,10 +348,10 @@ def adaptive_control_app():
         fig.update_yaxes(title_text="[mmol/L]")
         st.plotly_chart(fig)
 
-    with st.beta_expander("Reference model response to reference signal"):
+    with st.expander("Reference model response to reference signal"):
         plot_ref_model_response()
 
-    with st.beta_expander("Control algorithm details"):
+    with st.expander("Control algorithm details"):
         st.text("Control algorithm:")
         st.latex(
             r"""
@@ -442,10 +442,10 @@ def adaptive_control_app():
 
     rm_list = [a1m, a0m]
 
-    with st.beta_expander("Control algorithm parameters"):
+    with st.expander("Control algorithm parameters"):
         st.subheader("Auxiliary filter denominator")
         st.latex(r"\Lambda(s)=s^2 + \lambda_{1} s + \lambda_{0}")
-        col_aux_filter = st.beta_columns(2)
+        col_aux_filter = st.columns(2)
         lambda1 = col_aux_filter[0].number_input(r"lambda1", 0.01, 0.5, 0.2)
         lambda0 = col_aux_filter[1].number_input(
             r"lambda0", 0.001, 0.1, 0.01, step=0.01  # , format="%.6f"
@@ -481,14 +481,14 @@ def adaptive_control_app():
         st.latex(
             r"\text{Adaptation gain: }\Gamma = diag(\gamma_1, \gamma_2, \gamma_3, \gamma_4 ,\gamma_5, \gamma_6)"
         )
-        col_adapt_gain1 = st.beta_columns(3)
+        col_adapt_gain1 = st.columns(3)
         col_adapt_gain1[0].latex(r"\gamma_1")
         gamma1 = col_adapt_gain1[0].number_input(r"", 0.01, 1.0, 0.1)
         col_adapt_gain1[1].latex(r"\gamma_2")
         gamma2 = col_adapt_gain1[1].number_input(r"  ", 0.001, 0.1, 0.01)
         col_adapt_gain1[2].latex(r"\gamma_3")
         gamma3 = col_adapt_gain1[2].number_input(r"   ", 0.01, 1.0, 0.1)
-        col_adapt_gain2 = st.beta_columns(3)
+        col_adapt_gain2 = st.columns(3)
         col_adapt_gain2[0].latex(r"\gamma_4")
         gamma4 = col_adapt_gain2[0].number_input(r"", 0.001, 0.1, 0.01)
         col_adapt_gain2[1].latex(r"\gamma_5")
@@ -496,7 +496,7 @@ def adaptive_control_app():
         col_adapt_gain2[2].latex(r"\gamma_6")
         gamma6 = col_adapt_gain2[2].number_input(r"  ", 1e3, 10e3, 5e3)
         st.text("Sigma-modification parameters:")
-        col_sigma_mod = st.beta_columns(3)
+        col_sigma_mod = st.columns(3)
         col_sigma_mod[0].latex(r"M_0")
         M0 = col_sigma_mod[0].number_input(" ", 50, 150, 100)
         col_sigma_mod[1].latex(r"q_0")
@@ -524,7 +524,7 @@ def adaptive_control_app():
         st.latex(r"\text{Adaptation gain }\gamma")
         gamma = st.number_input(" ", 1, 10, 5)
         st.text("Sigma-modification parameters:")
-        col_sigma_mod_dist = st.beta_columns(2)
+        col_sigma_mod_dist = st.columns(2)
         col_sigma_mod_dist[0].latex(r"M_{0d}")
         M0d = col_sigma_mod_dist[0].number_input(" ", 500, 1500, 1000)
         col_sigma_mod_dist[1].latex(r"\sigma_d")
@@ -601,7 +601,7 @@ def adaptive_control_app():
     # data_load_state.text("Simulation in progress...done")
     # st.text("Simulation took %s seconds " % (time.time() - start_time))
     # adaptive control simulation
-    col_rerun_sim = st.beta_columns(2)
+    col_rerun_sim = st.columns(2)
     if col_rerun_sim[0].button("Re-run simulation"):
         
         # start_time = time.time()
@@ -777,5 +777,5 @@ def adaptive_control_app():
         fig.update_yaxes(title_text="parameter value")
         st.plotly_chart(fig)
 
-    with st.beta_expander("Time evolution of adapting parameters"):
+    with st.expander("Time evolution of adapting parameters"):
         plot_controller_parameters()

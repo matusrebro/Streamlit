@@ -21,7 +21,7 @@ def app():
     def get_data():
         return []
 
-    col_add = st.beta_columns(2)
+    col_add = st.columns(2)
     ticker_to_add = col_add[0].text_input("add ticker")
     if col_add[1].button("add to list"):
         get_data().append(ticker_to_add)
@@ -31,7 +31,7 @@ def app():
     else:
         pass
 
-    col_mod = st.beta_columns(2)
+    col_mod = st.columns(2)
     newlist = col_mod[0].multiselect("selected tickers: ", get_data(), get_data())
 
     if col_mod[1].button("update list"):
@@ -67,7 +67,7 @@ def app():
         for idx, _ in enumerate(stocks_info):
             weights.append(1 / len(stocks_info))
 
-        col_mod_weight = st.beta_columns(2)
+        col_mod_weight = st.columns(2)
         selected_ticker_idx = col_mod_weight[0].selectbox(
             label="Modify stock weight",
             options=[index for index, _ in enumerate(get_data())],

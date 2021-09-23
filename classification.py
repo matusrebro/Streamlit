@@ -39,14 +39,14 @@ def classification_app():
     data = get_dataset(dataset_name)
     X = data.data
     y = data.target
-    with st.beta_expander('Dataset info'):
+    with st.expander('Dataset info'):
         st.write('Shape of dataset:', X.shape)
         st.write('number of classes:', len(np.unique(y)))
         st.text('Head of the dataset')
         st.write(data.frame.head())
         st.text('Target names:')
         st.write(data.target_names)
-    with st.beta_expander('Dataset further details and description'):
+    with st.expander('Dataset further details and description'):
         st.write(data.DESCR)
 
     classifier_name = st.selectbox(

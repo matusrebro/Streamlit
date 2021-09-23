@@ -14,7 +14,7 @@ def glucose_metabolism_app():
 
     if simulationPage == "IVGTT simulation":
         st.subheader("Insulin-modified intravenous glucose tolerance test")
-        with st.beta_expander("Model equations"):
+        with st.expander("Model equations"):
             st.text("Minimal (Bergman) model is given by three differential equations:")
             st.latex(
                 r"""
@@ -67,9 +67,9 @@ def glucose_metabolism_app():
         options = ["normal", "obese", "t2dm"]
         pars = st.selectbox("Choose model parameters", options=options)
 
-        disp_par = st.beta_container()
+        disp_par = st.container()
 
-        basal_cols = st.beta_columns(2)
+        basal_cols = st.columns(2)
 
         Gb = basal_cols[0].number_input(
             "Basal glucose concentration [mmol/L]", min_value=3, max_value=10, value=5
@@ -82,7 +82,7 @@ def glucose_metabolism_app():
         model = minimal_model.iv(Gb, Ib, parameters=pars)
 
         # T_G, Kx, V_G, T_X, T_I, Kg1, Kg2, T2, V_I  = p
-        with disp_par.beta_expander("Display parameter values"):
+        with disp_par.expander("Display parameter values"):
             # st.write(model.parameters)
             st.latex(
                 r"""
@@ -118,7 +118,7 @@ def glucose_metabolism_app():
                         """
             )
 
-        input_cols = st.beta_columns(2)
+        input_cols = st.columns(2)
 
         glucose_dose = input_cols[0].slider(
             "Glucose bolus dose [g/kg]", min_value=0.1, max_value=1.0, value=0.3
@@ -176,7 +176,7 @@ def glucose_metabolism_app():
 
     elif simulationPage == "OGTT simulation":
         st.subheader("Oral glucose tolerance test")
-        with st.beta_expander("Model equations"):
+        with st.expander("Model equations"):
             st.text("Minimal (Bergman) model is given by three differential equations:")
             st.latex(
                 r"""
@@ -253,9 +253,9 @@ def glucose_metabolism_app():
             )
         options = ["normal", "t2dm"]
         pars = st.selectbox("Model parameters", options=options)
-        disp_par = st.beta_container()
+        disp_par = st.container()
 
-        basal_cols = st.beta_columns(2)
+        basal_cols = st.columns(2)
 
         Gb = basal_cols[0].number_input(
             "Basal glucose concentration [mmol/L]", min_value=3, max_value=10, value=5
@@ -267,7 +267,7 @@ def glucose_metabolism_app():
         # initialize model for normal subject
         model = minimal_model.oral(Gb, Ib, parameters=pars)
         # T_G, Kx, V_G, T_X, Kd, Td1, Td2, T_I, Kg1, Kg2, T2, V_I, Kg1m, Kg2m = p
-        with disp_par.beta_expander("Display parameter values"):
+        with disp_par.expander("Display parameter values"):
             # st.write(model.parameters)
             st.latex(
                 r"""
@@ -323,7 +323,7 @@ def glucose_metabolism_app():
 
         gly_index_options = ["glucose", "low", "medium", "high"]
         gly_index = st.selectbox(label="Glycemic index", options=gly_index_options)
-        with st.beta_expander(
+        with st.expander(
             "See glycemic index modification of glucose absorption model parameters"
         ):
             # st.write(model.parameters)
@@ -369,7 +369,7 @@ def glucose_metabolism_app():
 
     elif simulationPage == "Glucose clamp simulation":
         st.subheader("Hyperinsulinemic euglycemic glucose clamp simulator")
-        with st.beta_expander("Model equations"):
+        with st.expander("Model equations"):
             st.text("Minimal (Bergman) model is given by three differential equations:")
             st.latex(
                 r"""
@@ -475,8 +475,8 @@ def glucose_metabolism_app():
             )
         options = ["normal", "obese", "t2dm"]
         pars = st.selectbox("Model parameters", options=options)
-        disp_par = st.beta_container()
-        basal_cols = st.beta_columns(2)
+        disp_par = st.container()
+        basal_cols = st.columns(2)
 
         Gb = basal_cols[0].number_input(
             "Basal glucose concentration [mmol/L]", min_value=3, max_value=10, value=5
@@ -488,7 +488,7 @@ def glucose_metabolism_app():
         # initialize model for normal subject
         model = minimal_model.iv(Gb, Ib, parameters=pars)
         # T_G, Kx, V_G, T_X, T_I, Kg1, Kg2, T2, V_I  = p
-        with disp_par.beta_expander("Display parameter values"):
+        with disp_par.expander("Display parameter values"):
             # st.write(model.parameters)
             st.latex(
                 r"""

@@ -71,7 +71,7 @@ def prediction_app():
 
         if selected_model == 'ARMA':
             st.text("ARMA model")
-            with st.beta_expander('Model structure and prediction algorithm'):
+            with st.expander('Model structure and prediction algorithm'):
                 st.markdown(r'Model output $y(t)$ is given by:')
                 st.latex(r'''
                         y(t)=\frac{D(z^{-1})}{A(z^{-1})}\varepsilon(t)
@@ -123,7 +123,7 @@ def prediction_app():
                             ''')
                 
             N = st.number_input("Prediction horizon [days]", 1, 60, 5)
-            col_pars = st.beta_columns(3)
+            col_pars = st.columns(3)
             na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
             nc = col_pars[1].number_input("Order of moving average part", 1, 10, 4)
             fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
@@ -134,7 +134,7 @@ def prediction_app():
 
         elif selected_model == 'ARIMA':
             st.text("ARIMA model (todo)")
-            with st.beta_expander('Model structure and prediction algorithm'):
+            with st.expander('Model structure and prediction algorithm'):
                 st.markdown(r'Model output $y(t)$ is given by:')
                 st.latex(r'''
                         y(t)=\frac{D(z^{-1})}{(1-z^{-1})A(z^{-1})}\varepsilon(t)
@@ -202,7 +202,7 @@ def prediction_app():
                          \hat{y}(t)= h^T\theta + y(t-1)
                         ''')
             N = st.number_input("Prediction horizon [days]", 1, 60, 5)
-            col_pars = st.beta_columns(3)
+            col_pars = st.columns(3)
             na = col_pars[0].number_input("Order of autoregressive part", 1, 10, 4)
             nc = col_pars[1].number_input("Order of moving average part", 1, 10, 4)
             fz = col_pars[2].number_input("Forgetting factor", 0.01, 1.0, 1.0)
@@ -211,7 +211,7 @@ def prediction_app():
             ypredN, theta, thetak, yhat, resid = arima(data["Close"], na, nc, N, fz)
             pred_load_state.text("Running prediction algorithm...done!")
         """
-        testcols = st.beta_columns(3)
+        testcols = st.columns(3)
         testcols[0].write(data["Close"])
         testcols[1].write(data["Close"][N:])
         testcols[2].write(ypredN)
@@ -299,7 +299,7 @@ def prediction_app():
             )
             st.plotly_chart(fig)
 
-        with st.beta_expander("Show residuals and N-step prediction errors"):
+        with st.expander("Show residuals and N-step prediction errors"):
             plot_residuals()
             plot_pred_error()
             
@@ -324,7 +324,7 @@ def prediction_app():
             )
             st.plotly_chart(fig)
 
-        with st.beta_expander("Model parameters"):
+        with st.expander("Model parameters"):
             st.text("Final parameters:")
             st.write(thetak)
             plot_parameters()
