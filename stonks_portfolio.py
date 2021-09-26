@@ -15,12 +15,12 @@ if 'tickers' not in st.session_state:
     st.session_state['tickers'] = []
 
 
-def app():
+def portfolio_app():
     st.title("Portfolio metrics")
 
-    START = "2015-01-01"
+    START_default = date(2015, 1, 1)
     TODAY = date.today().strftime("%Y-%m-%d")
-
+    START = st.date_input("Enter starting date", START_default)
     # code before session state api
     # @st.cache(allow_output_mutation=True)
     # def get_data():

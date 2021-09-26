@@ -7,14 +7,16 @@ from plotly.subplots import make_subplots
 import pandas as pd
 
 
-def app():
-    START = "2015-01-01"
+def stonks_app():
+    START_default = date(2015, 1, 1)
     TODAY = date.today().strftime("%Y-%m-%d")
 
     st.title("Single stock info and indices")
 
     # stocks = ('GOOG', 'AAPL', 'MSFT', 'GME')
     # selected_stock = st.selectbox('Select dataset for prediction', stocks)
+
+    START = st.date_input("Enter starting date", START_default)
 
     selected_stock = st.text_input("Enter stock ticker", "MSFT")
 
