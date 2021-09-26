@@ -10,6 +10,10 @@ from scipy.optimize import minimize
 
 # from scipy.optimize import least_squares
 
+# Initialization of session state
+if 'tickers' not in st.session_state:
+    st.session_state['tickers'] = []
+
 
 def app():
     st.title("Portfolio metrics")
@@ -17,26 +21,41 @@ def app():
     START = "2015-01-01"
     TODAY = date.today().strftime("%Y-%m-%d")
 
-    @st.cache(allow_output_mutation=True)
-    def get_data():
-        return []
+    # code before session state api
+    # @st.cache(allow_output_mutation=True)
+    # def get_data():
+    #     return []
 
     col_add = st.columns(2)
     ticker_to_add = col_add[0].text_input("add ticker")
-    if col_add[1].button("add to list"):
-        get_data().append(ticker_to_add)
+    col_add[1].empty()
+    
+    # code before session state api
+    # if col_add[1].button("add to list"):
+    #     get_data().append(ticker_to_add)
 
-    if "" in get_data():
-        get_data().remove("")
+    st.session_state['tickers'].append(ticker_to_add)
+    st.session_state['tickers'] = list(set(st.session_state['tickers']))
+
+    if "" in st.session_state['tickers']:
+        st.session_state['tickers'].remove("")
     else:
         pass
 
-    col_mod = st.columns(2)
-    newlist = col_mod[0].multiselect("selected tickers: ", get_data(), get_data())
+    # code before session state api
+    # if "" in get_data():
+    #     get_data().remove("")
+    # else:
+    #     pass
 
-    if col_mod[1].button("update list"):
-        get_data().clear()
-        get_data().extend(newlist)
+    col_mod = st.columns(2)
+    newlist = col_mod[0].multiselect("selected tickers: ", st.session_state['tickers'], st.session_state['tickers'])
+    st.session_state['tickers'] = newlist[:]
+    
+    # code before session state api
+    # if col_mod[1].button("update list"):
+    #     get_data().clear()
+    #     get_data().extend(newlist)
 
     @st.cache
     def load_ticker_info(ticker_list):
@@ -56,11 +75,11 @@ def app():
             stocks_data.append(ticker_data)
         return stocks_data
 
-    tickers_added = len(get_data()) > 0
+    tickers_added = len(st.session_state['tickers']) > 0
 
     if tickers_added:
         data_load_state = st.text("Loading ticker data...")
-        stocks_info = load_ticker_info(get_data())
+        stocks_info = load_ticker_info(st.session_state['tickers'])
         data_load_state.text("Loading data... done!")
 
         weights = []
@@ -70,8 +89,8 @@ def app():
         col_mod_weight = st.columns(2)
         selected_ticker_idx = col_mod_weight[0].selectbox(
             label="Modify stock weight",
-            options=[index for index, _ in enumerate(get_data())],
-            format_func=lambda i: get_data()[i],
+            options=[index for index, _ in enumerate(st.session_state['tickers'])],
+            format_func=lambda i: st.session_state['tickers'][i],
         )
 
         weight_to_update = col_mod_weight[1].number_input(
@@ -101,7 +120,7 @@ def app():
                 )
             else:
                 df_to_append = pd.DataFrame(
-                    [[get_data()[idx], "no data"], weights[idx]], columns=column_names
+                    [[st.session_state['tickers'][idx], "no data"], weights[idx]], columns=column_names
                 )
             # st.write(df_to_append)
             stocks_basic_data = stocks_basic_data.append(df_to_append)
@@ -111,17 +130,17 @@ def app():
         st.write(stocks_basic_data)
 
         data_load_state = st.text("Loading ticker datasets...")
-        stocks_data = load_data(get_data())
+        stocks_data = load_data(st.session_state['tickers'])
         data_load_state.text("Loading data... done!")
 
-        column_names = list(get_data())
+        column_names = list(st.session_state['tickers'])
         column_names.append("Date")
         stocks_values = pd.DataFrame(columns=column_names)
 
-        if len(get_data()) > 0:
+        if len(st.session_state['tickers']) > 0:
             stocks_values["Date"] = stocks_data[0]["Date"]
 
-        for idx, ticker in enumerate(get_data()):
+        for idx, ticker in enumerate(st.session_state['tickers']):
             stocks_values[ticker] = stocks_data[idx]["Close"]
 
         stocks_values = stocks_values.set_index("Date")
@@ -136,7 +155,7 @@ def app():
                         go.Scatter(
                             x=stock_data["Date"],
                             y=stock_data["Close"] / stock_data["Close"].iloc[0] * 100,
-                            name=str(get_data()[idx]),
+                            name=str(st.session_state['tickers'][idx]),
                         )
                     )
                 else:
@@ -144,7 +163,7 @@ def app():
                         go.Scatter(
                             x=stock_data["Date"],
                             y=stock_data["Close"],
-                            name=str(get_data()[idx]),
+                            name=str(st.session_state['tickers'][idx]),
                         )
                     )
             fig.layout.update(
@@ -197,7 +216,7 @@ def app():
             f"Annual portfolio volatility: {round(portfolio_var_annual ** 0.5 * 100, 3)} [%]"
         )
 
-        if len(get_data()) > 1:
+        if len(st.session_state['tickers']) > 1:
             st.subheader("Markowitz portfolio analysis")
             weight_combin_no = 1000
 
@@ -207,7 +226,7 @@ def app():
             portfolio_var_annual_arr = np.zeros(weight_combin_no)
 
             for i in range(weight_combin_no):
-                weights_rand = np.random.random(len(get_data()))
+                weights_rand = np.random.random(len(st.session_state['tickers']))
                 weights_rand /= np.sum(weights_rand)
                 weights_rand_l = weights_rand.tolist()
                 weights_rand_l = ["{:.2f}".format(x) for x in weights_rand_l]
@@ -238,7 +257,7 @@ def app():
             run_simplex = st.button("Find optimal weights (minimizing variance)")
             opt_weights = None
             if run_simplex:
-                w0 = np.ones(len(get_data())) * 1 / len(get_data())
+                w0 = np.ones(len(st.session_state['tickers'])) * 1 / len(st.session_state['tickers'])
                 data_load_state = st.text("Running Simplex optimization...")
                 res = minimize(
                     fcn_obj_weights,
@@ -248,11 +267,11 @@ def app():
                     options={"fatol": 0.0000001},
                 )
                 data_load_state.text("...Done")
-                st.text("Optimaal weights:")
+                st.text("Optimal weights:")
                 opt_weights = res.x
-                df_optimal_weights = pd.DataFrame(columns=get_data())
+                df_optimal_weights = pd.DataFrame(columns=st.session_state['tickers'])
                 df_optimal_weights = df_optimal_weights.append(
-                    pd.DataFrame([opt_weights], columns=get_data())
+                    pd.DataFrame([opt_weights], columns=st.session_state['tickers'])
                 )
                 st.write(df_optimal_weights)
                 opt_variance = fcn_obj_weights(opt_weights, cov_matrix)
