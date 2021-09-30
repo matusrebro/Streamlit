@@ -4,12 +4,38 @@ from plotly import graph_objs as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
-from Diabetes import minimal_model
+from scipy.integrate import odeint
+from copy import deepcopy
+
+rho_cal = 9e3  # fat energy density [9000 kcal/kg]
+
 
 def basal_metabolic_rate(par, body_mass, height, age):
 	a, b, c, d = par
 	return a*body_mass + b*height + c*age + d
-	
+
+
+def fcn_m_dot(x, t, p, height, age, eee, dci):
+	return rho_cal * (-basal_metabolic_rate(p, x, height, age) - eee + dci)
+
+def sim_m(bw_0, days, par, height, age, eee, dci):
+	x = np.zeros(days)
+	x[0] = bw_0
+	for i in range(1, days):
+		y = odeint(
+			fcn_m_dot,
+			x[i - 1],
+			np.linspace((i - 1), i),
+			args=(
+				par,
+				height,
+				age,
+				eee,
+				dci,
+			),
+		)
+		x[i] = y[-1]
+	return x
 
 def body_mass_app():
 	st.header("Simulation of body mass change")
@@ -124,3 +150,12 @@ def body_mass_app():
 		
 		
 	plot_bmr()
+ 
+ 
+	# st.subheader("Simulation of bodyweight change")
+	# days = st.number_input("Simulation time range [days]", 1, 30, 5, 1)
+	# eee = st.number_input("Daily energy expenditure [kcal/day]", 0, 1000, 0, 1)
+	# dci = st.number_input("Daily calorie intake [kcal/day]", 0, 10000, 2000, 1)
+	# sim_output = sim_m(body_mass, days, selected_par[sex_idx], height, age, eee, dci)
+
+	# st.write(sim_output)
