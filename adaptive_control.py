@@ -8,6 +8,7 @@ from adaptive_control_fcns import sim_MRAC
 import matplotlib.pyplot as plt
 from scipy import signal
 from control_systems import lin_model
+
 # import time
 
 
@@ -573,11 +574,11 @@ def adaptive_control_app():
 
     # data_load_state = st.text("Simulation in progress...")
     # start_time = time.time()
-    with np.load('default_mrac_sim.npz') as data:
-        x = data['x']
-        u = data['u']
-        ud = data['ud']
-        vb = data['vb']
+    with np.load("default_mrac_sim.npz") as data:
+        x = data["x"]
+        u = data["u"]
+        ud = data["ud"]
+        vb = data["vb"]
     """
     x, u, ud, vb = sim_adaptive_control(
         tt,
@@ -603,7 +604,7 @@ def adaptive_control_app():
     # adaptive control simulation
     col_rerun_sim = st.columns(2)
     if col_rerun_sim[0].button("Re-run simulation"):
-        
+
         # start_time = time.time()
         data_load_state = st.text("Simulation in progress...")
         x, u, ud, vb = sim_adaptive_control(
@@ -626,8 +627,10 @@ def adaptive_control_app():
         )
         data_load_state.text("Simulation in progress...done")
         # st.text("Simulation took %s seconds " % (time.time() - start_time))
-        
-    col_rerun_sim[1].text('Note: This may take more than 5 minutes \nwhen run from Heroku')
+
+    col_rerun_sim[1].text(
+        "Note: This may take more than 5 minutes \nwhen run from Heroku"
+    )
     # signals for plotting
     Vbasdata = (u + vb) / 1e3 * 60  # basal insulin [U/h]
     Vboldata = -ud / 1e3 * Ts  # bolus insulin [U]

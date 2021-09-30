@@ -1,5 +1,5 @@
-import streamlit as st 
-import numpy as np 
+import streamlit as st
+import numpy as np
 
 import matplotlib.pyplot as plt
 from sklearn import datasets
@@ -15,20 +15,17 @@ from sklearn.metrics import accuracy_score
 
 def classification_app():
 
-    st.subheader('Classification algorithms')
+    st.subheader("Classification algorithms")
 
-    dataset_name = st.selectbox(
-        'Select Dataset',
-        ('Iris', 'Breast Cancer', 'Wine')
-    )
+    dataset_name = st.selectbox("Select Dataset", ("Iris", "Breast Cancer", "Wine"))
 
     st.write(f"### {dataset_name} Dataset")
 
     def get_dataset(name):
         data = None
-        if name == 'Iris':
+        if name == "Iris":
             data = datasets.load_iris(as_frame=True)
-        elif name == 'Wine':
+        elif name == "Wine":
             data = datasets.load_wine(as_frame=True)
         else:
             data = datasets.load_breast_cancer(as_frame=True)
@@ -39,62 +36,66 @@ def classification_app():
     data = get_dataset(dataset_name)
     X = data.data
     y = data.target
-    with st.expander('Dataset info'):
-        st.write('Shape of dataset:', X.shape)
-        st.write('number of classes:', len(np.unique(y)))
-        st.text('Head of the dataset')
+    with st.expander("Dataset info"):
+        st.write("Shape of dataset:", X.shape)
+        st.write("number of classes:", len(np.unique(y)))
+        st.text("Head of the dataset")
         st.write(data.frame.head())
-        st.text('Target names:')
+        st.text("Target names:")
         st.write(data.target_names)
-    with st.expander('Dataset further details and description'):
+    with st.expander("Dataset further details and description"):
         st.write(data.DESCR)
 
-    classifier_name = st.selectbox(
-        'Select classifier',
-        ('KNN', 'SVM', 'Random Forest')
-    )
+    classifier_name = st.selectbox("Select classifier", ("KNN", "SVM", "Random Forest"))
 
     def add_parameter_ui(clf_name):
         params = dict()
-        if clf_name == 'SVM':
-            C = st.slider('C', 0.01, 10.0)
-            params['C'] = C
-        elif clf_name == 'KNN':
-            K = st.slider('K', 1, 15)
-            params['K'] = K
+        if clf_name == "SVM":
+            C = st.slider("C", 0.01, 10.0)
+            params["C"] = C
+        elif clf_name == "KNN":
+            K = st.slider("K", 1, 15)
+            params["K"] = K
         else:
-            max_depth = st.slider('max_depth', 2, 15)
-            params['max_depth'] = max_depth
-            n_estimators = st.slider('n_estimators', 1, 100)
-            params['n_estimators'] = n_estimators
+            max_depth = st.slider("max_depth", 2, 15)
+            params["max_depth"] = max_depth
+            n_estimators = st.slider("n_estimators", 1, 100)
+            params["n_estimators"] = n_estimators
         return params
 
     params = add_parameter_ui(classifier_name)
 
     def get_classifier(clf_name, params):
         clf = None
-        if clf_name == 'SVM':
-            clf = SVC(C=params['C'])
-        elif clf_name == 'KNN':
-            clf = KNeighborsClassifier(n_neighbors=params['K'])
+        if clf_name == "SVM":
+            clf = SVC(C=params["C"])
+        elif clf_name == "KNN":
+            clf = KNeighborsClassifier(n_neighbors=params["K"])
         else:
-            clf = clf = RandomForestClassifier(n_estimators=params['n_estimators'], 
-                max_depth=params['max_depth'], random_state=1234)
+            clf = clf = RandomForestClassifier(
+                n_estimators=params["n_estimators"],
+                max_depth=params["max_depth"],
+                random_state=1234,
+            )
         return clf
 
     clf = get_classifier(classifier_name, params)
     #### CLASSIFICATION ####
 
-    test_size = st.slider('Test size', min_value=0.2, max_value=0.5, value=0.2, step=0.01)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=1234)
+    test_size = st.slider(
+        "Test size", min_value=0.2, max_value=0.5, value=0.2, step=0.01
+    )
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=1234
+    )
 
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     acc = accuracy_score(y_test, y_pred)
 
-    st.write(f'Classifier = {classifier_name}')
-    st.write(f'Accuracy =', acc)
+    st.write(f"Classifier = {classifier_name}")
+    st.write(f"Accuracy =", acc)
 
     #### PLOT DATASET ####
     # Project the data onto the 2 primary principal components
@@ -105,13 +106,11 @@ def classification_app():
     x2 = X_projected[:, 1]
 
     fig = plt.figure()
-    plt.scatter(x1, x2,
-            c=y, alpha=0.8,
-            cmap='viridis')
+    plt.scatter(x1, x2, c=y, alpha=0.8, cmap="viridis")
 
-    plt.xlabel('Principal Component 1')
-    plt.ylabel('Principal Component 2')
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
     plt.colorbar()
 
-    #plt.show()
+    # plt.show()
     st.pyplot(fig)

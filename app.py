@@ -15,7 +15,7 @@ PAGES = {
     "Landing page": landing_page,
     "Simulators": simulations,
     "Machine learning": machine_learning,
-    "Stocks": stonks_main_page
+    "Stocks": stonks_main_page,
 }
 
 st.sidebar.title("Navigation")

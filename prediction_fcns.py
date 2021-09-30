@@ -2,18 +2,18 @@ import numpy as np
 
 
 def moving_average(y, N):
-    
+
     idx_final = y.shape[0]
     yf = np.zeros([idx_final, 1])
     ypf = np.zeros([N, 1])
     ypf[0:N, 0] = y[0:N]
-        
+
     for i in range(0, idx_final):
         if i > 0:
             ypf = np.roll(ypf, 1)
             ypf[0, 0] = y[i]
 
-        yf[i] = 1/(N+1) * (y[i]+np.sum(ypf))
+        yf[i] = 1 / (N + 1) * (y[i] + np.sum(ypf))
     return yf
 
 
@@ -97,7 +97,7 @@ def arima(y, na, nc, N, fz):
 
     for i in range(0, idx_final):
         if i > 0:
-            y1[i, 0] = y[i] - y[i-1]
+            y1[i, 0] = y[i] - y[i - 1]
         else:
             y1[i, 0] = 0
 
@@ -139,7 +139,9 @@ def arima(y, na, nc, N, fz):
             h = np.vstack((-yp, ep))
             ypred_delta[k, 0] = np.dot(h[:, 0], thetak)  # this is predicted delta
             if k > 0:
-                ypred[k, 0] = ypred[k-1, 0] + ypred_delta[k, 0]  # here should be integrated delta
+                ypred[k, 0] = (
+                    ypred[k - 1, 0] + ypred_delta[k, 0]
+                )  # here should be integrated delta
             else:
                 ypred[k, 0] = y[i] + ypred_delta[k, 0]
         ypredN[i, 0] = ypred[-1, 0]
@@ -148,7 +150,7 @@ def arima(y, na, nc, N, fz):
 
 
 def arma_prediction(yp, ep, theta, N):
-    
+
     ypred = np.zeros([N, 1])
     for k in range(N):
         if k > 0:
@@ -163,8 +165,8 @@ def arma_prediction(yp, ep, theta, N):
 
 def arima_prediction(yp, ep, theta, N):
     # yp - these are values of past values of y na+1 long
-    y1 = np.array(yp)[0] # this is y(t)
-    yp = np.diff(yp[::-1])[::-1] # create differences
+    y1 = np.array(yp)[0]  # this is y(t)
+    yp = np.diff(yp[::-1])[::-1]  # create differences
     ypred = np.zeros([N, 1])
     ypred_delta = np.zeros([N, 1])
     for k in range(N):
@@ -176,7 +178,9 @@ def arima_prediction(yp, ep, theta, N):
         h = np.hstack((-yp, ep))
         ypred_delta[k, 0] = np.dot(h, theta)  # this is predicted delta
         if k > 0:
-            ypred[k, 0] = ypred[k-1, 0] + ypred_delta[k, 0]  # here should be integrated delta
+            ypred[k, 0] = (
+                ypred[k - 1, 0] + ypred_delta[k, 0]
+            )  # here should be integrated delta
         else:
             ypred[k, 0] = y1 + ypred_delta[k, 0]
     return ypred

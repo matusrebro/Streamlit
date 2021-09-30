@@ -12,7 +12,9 @@ from classification import classification_app
 def app():
     st.title("Machine learning algorithms showcase")
     selections = ["Stock market prediction/forecast", "Classification"]
-    simulationSelection = st.selectbox("Select machine learning demo", options=selections)
+    simulationSelection = st.selectbox(
+        "Select machine learning demo", options=selections
+    )
     if simulationSelection == "Stock market prediction/forecast":
         prediction_app()
     elif simulationSelection == "Classification":
