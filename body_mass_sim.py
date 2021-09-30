@@ -16,7 +16,7 @@ def basal_metabolic_rate(par, body_mass, height, age):
 
 
 def fcn_m_dot(x, t, p, height, age, eee, dci):
-	return rho_cal * (-basal_metabolic_rate(p, x, height, age) - eee + dci)
+	return 1/rho_cal * (-basal_metabolic_rate(p, x, height, age) - eee + dci)
 
 def sim_m(bw_0, days, par, height, age, eee, dci):
 	x = np.zeros(days)
@@ -151,11 +151,27 @@ def body_mass_app():
 		
 	plot_bmr()
  
- 
-	# st.subheader("Simulation of bodyweight change")
-	# days = st.number_input("Simulation time range [days]", 1, 30, 5, 1)
-	# eee = st.number_input("Daily energy expenditure [kcal/day]", 0, 1000, 0, 1)
-	# dci = st.number_input("Daily calorie intake [kcal/day]", 0, 10000, 2000, 1)
-	# sim_output = sim_m(body_mass, days, selected_par[sex_idx], height, age, eee, dci)
 
+ 
+	st.subheader("Simulation of body weight change")
+	st.text("Extreme oversimplification")
+	days = st.number_input("Simulation time range [days]", 1, 300, 10, 1)
+	eee = st.number_input("Daily energy expenditure [kcal/day]", 0, 1000, 0, 1)
+	dci = st.number_input("Daily calorie intake [kcal/day]", 0, 10000, 2000, 1)
+	sim_output = sim_m(body_mass, days, selected_par[sex_idx], height, age, eee, dci)
+
+	def plot_b_sim():
+		fig = go.Figure()
+		fig.add_trace(
+			go.Scatter(x=np.arange(0, days), y=sim_output, name="simulation result")
+		)
+		fig.layout.update(
+			title_text="Simulation of body weight change", 
+			xaxis_rangeslider_visible=True
+		)
+		fig.update_xaxes(title_text="tine [day]")
+		fig.update_yaxes(title_text="body weight [kg]")
+		st.plotly_chart(fig)
+
+	plot_b_sim()
 	# st.write(sim_output)
