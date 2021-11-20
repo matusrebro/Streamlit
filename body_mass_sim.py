@@ -18,6 +18,10 @@ def basal_metabolic_rate(par, body_mass, height, age):
 def fcn_m_dot(x, t, p, height, age, eee, dci):
 	return 1/rho_cal * (-basal_metabolic_rate(p, x, height, age) - eee + dci)
 
+def eq_body_mass(p, height, age, eee, dci):
+	a, b, c, d = p
+	return 1/a*(-b*height - c*age - d - eee + dci)
+
 def sim_m(bw_0, days, par, height, age, eee, dci):
 	x = np.zeros(days)
 	x[0] = bw_0
@@ -154,10 +158,27 @@ def body_mass_app():
 
  
 	st.subheader("Simulation of body weight change")
-	st.text("Extreme oversimplification")
-	days = st.number_input("Simulation time range [days]", 1, 300, 10, 1)
+	st.markdown(r"Simple model of body mass change can be designed as differential equation where positive flow of mass is daily caloric intake and negative are basal metabolic rate and daily energy expenditure:")
+	st.latex(r"\frac{dm}{dt} = \frac{1}{\rho_{cal}} \left( -P(m) -DEE +DCI \right)")
+	st.markdown(r"""
+		where $M$ [kg] is body mass, $\rho_{cal} = 9000$ [kcal/kg] is fat energy density and $P$, $DEE$, $DCI$ [kcal/day] are basal metabolic rate, 
+		daily energy expenditure and daily energy caloric intake respectively.
+	""")
+	st.markdown(r"equilibrium - steady state:")
+	st.latex(r"0= \frac{1}{\rho_{cal}} \left( -P(m_{eq}) -DEE +DCI \right)")
+	st.markdown(r"gives body mass in equilibrium:")
+	st.latex(r"m_{eq}= \frac{-bh -ca -d -DEE +DCI}{a}")
+	days = st.number_input("Simulation time range [days]", 1, 1000, 10, 1)
 	eee = st.number_input("Daily energy expenditure [kcal/day]", 0, 1000, 0, 1)
 	dci = st.number_input("Daily calorie intake [kcal/day]", 0, 10000, 2000, 1)
+
+
+
+	m_eq = eq_body_mass(selected_par[sex_idx], height, age, eee, dci)
+	
+	
+	st.columns(3)[1].markdown(r'#### $m_{eq}$ = **'+ str(round(m_eq, 2))  +'** kg')
+
 	sim_output = sim_m(body_mass, days, selected_par[sex_idx], height, age, eee, dci)
 
 	def plot_b_sim():
