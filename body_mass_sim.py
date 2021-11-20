@@ -168,6 +168,27 @@ def body_mass_app():
 	st.latex(r"0= \frac{1}{\rho_{cal}} \left( -P(m_{eq}) -DEE +DCI \right)")
 	st.markdown(r"gives body mass in equilibrium:")
 	st.latex(r"m_{eq}= \frac{-bh -ca -d -DEE +DCI}{a}")
+
+	st.markdown(r"""
+		If you would play with the simulator you would quickly see that the body mass cannot get to the equilibrium.
+		This is due to the time constant of our simple model which most probably does not reflect reality.
+		Since our model is linear we can quickly find the time constant when we rearrange equation into the following form:
+	""")
+	st.latex(r"\frac{dm}{dt} = -\frac{1}{\tau} m + ...")
+	st.markdown(r"where $\tau$ [day] is the time constant. Expanding the $P$ term and rearranging gives:")
+	st.latex(r"\frac{dm}{dt} = -\frac{a}{\rho_{cal}}m + \frac{1}{\rho_{cal}} \left( bh -ca +d -DEE +DCI \right)")
+
+	st.markdown(r"So the time constant is:")
+	st.latex(r"\tau = \frac{\rho_{cal}}{a} ")
+
+	st.markdown(r"""
+		And since $\rho_{cal}$ = 9000 [kcal/kg] and say we put $a$ = 13 [kcal/day per kg] 
+		(this parameter depends on selected equation for basal metabolic rate, but for the sake of simplicity lets use rounded value for Harris–Benedict equation)
+		These numbers give us $\tau \approx$ 690 [days] and since 99 percent of steady state value is reached after roughly 5$\tau$ this gives us around 9.5 years
+		which is quite a time. The time constant however can be changed to reflect reality without affecting equilbrium mass or basal metabolic rate models. 
+		The only thing we would need are data supporting such an adjustment.
+	""")
+
 	days = st.number_input("Simulation time range [days]", 1, 1000, 10, 1)
 	eee = st.number_input("Daily energy expenditure [kcal/day]", 0, 1000, 0, 1)
 	dci = st.number_input("Daily calorie intake [kcal/day]", 0, 10000, 2000, 1)
@@ -185,6 +206,9 @@ def body_mass_app():
 		fig = go.Figure()
 		fig.add_trace(
 			go.Scatter(x=np.arange(0, days), y=sim_output, name="simulation result")
+		)
+		fig.add_trace(
+			go.Scatter(x=np.arange(0, days), y=np.ones_like(sim_output)*m_eq, name="steady state")
 		)
 		fig.layout.update(
 			title_text="Simulation of body weight change", 

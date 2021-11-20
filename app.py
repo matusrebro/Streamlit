@@ -2,6 +2,7 @@ import landing_page
 import stonks_main_page
 import simulations
 import machine_learning
+import covid
 import streamlit as st
 
 st.set_page_config(
@@ -13,6 +14,7 @@ st.set_page_config(
 
 PAGES = {
     "Landing page": landing_page,
+    "COVID-19": covid,
     "Simulators": simulations,
     "Machine learning": machine_learning,
     "Stocks": stonks_main_page,
