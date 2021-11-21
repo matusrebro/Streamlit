@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from plotly import graph_objs as go
 from sklearn.metrics import accuracy_score
+from datetime import datetime
 
 from plotly.subplots import make_subplots
 
@@ -13,38 +14,96 @@ def app():
 
     daily_stats_slovakia_url = "https://raw.githubusercontent.com/Institut-Zdravotnych-Analyz/covid19-data/main/DailyStats/OpenData_Slovakia_Covid_DailyStats.csv"
 
-    daily_stats_slovakia_data = pd.read_csv(daily_stats_slovakia_url, sep=';')
+    @st.cache
+    def get_daily_stats():
+        covid_data = pd.read_csv(daily_stats_slovakia_url, sep=';')
+        covid_data['Datum'] = pd.to_datetime(covid_data['Datum'], format='%Y-%m-%d')
+        return covid_data
 
-    # st.write(daily_stats_slovakia_data['Datum'].values)
-    tdata = np.arange(0, len(daily_stats_slovakia_data['Datum'].values)) # days from 6.3..2020
-    fig = plt.figure()
-    plt.plot(tdata, daily_stats_slovakia_data['Pocet.umrti'])
-    st.pyplot(fig)
-    # confirmed_data = df_confirmed[df_confirmed.columns[4:]]
-    # confirmed_data_global = confirmed_data.sum(0)
+    covid_data = get_daily_stats()
+    #t = np.arange(0, len(covid_data['Datum'].values)) # days from 6.3..2020
 
-    # deaths_data = df_deaths[df_deaths.columns[4:]]
-    # deaths_data_global = deaths_data.sum(0)
+    def plot_daily_stats():
+        # fig = go.Figure()
+        
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # recovered_data = df_recovered[df_recovered.columns[4:]]
-    # recovered_data_global = recovered_data.sum(0)
+        fig.add_trace(
+            go.Bar(x=covid_data['Datum'], y=covid_data['Dennych.PCR.prirastkov'], name="positive PCR count"), secondary_y=True
+        )
+        fig.add_trace(
+            go.Bar(x=covid_data['Datum'], y=covid_data['AgPosit'], name="positive Ag count"), secondary_y=True
+        )
+
+        fig.add_trace(
+            go.Scatter(x=covid_data['Datum'], y=covid_data['Pocet.umrti'], name="Total deaths", line_color="#000000", opacity=1), secondary_y=False
+        )
+
+        fig.layout.update(
+            title_text="Deaths and positive cases", xaxis_rangeslider_visible=False, autosize=False, height=600, width=850
+        )
+        fig.update_xaxes(title_text="")
+        fig.update_yaxes(title_text="Deaths", secondary_y=False)
+        fig.update_yaxes(title_text="Positive tests", secondary_y=True)
+        fig.update_layout(barmode='stack')
+        st.plotly_chart(fig)
+
+    def plot_death_stats():
+        # fig = go.Figure()
+        
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        
+        fig.add_trace(
+            go.Scatter(x=covid_data['Datum'], y=covid_data['Pocet.umrti'], name="Total deaths"), secondary_y=False
+        )
+
+        fig.add_trace(
+            go.Scatter(x=covid_data['Datum'], y=np.gradient(covid_data['Pocet.umrti']), name="Deaths per day"), secondary_y=True
+        )
+
+        fig.layout.update(
+            title_text="Deaths", xaxis_rangeslider_visible=False
+        )
+        fig.update_xaxes(title_text="")
+        fig.update_yaxes(title_text="Deaths", secondary_y=False)
+        fig.update_yaxes(title_text="Deaths per day", secondary_y=True)
+        st.plotly_chart(fig)
+
+    def plot_death_stats_per_year():
+        # fig = go.Figure()
+        
+        fig = make_subplots(specs=[[{"secondary_y": False}]])
+        
+        data_2020 = covid_data[covid_data['Datum'].dt.year==2020]
+        data_2021 = covid_data[covid_data['Datum'].dt.year==2021]
+        data_2021['Datum'] = data_2021['Datum'].mask(data_2021['Datum'].dt.year == 2021, 
+                             data_2021['Datum'] + pd.offsets.DateOffset(year=2020))
+        fig.add_trace(
+            go.Scatter(x=data_2020['Datum'], y=np.gradient(data_2020['Pocet.umrti']), name="2020"), secondary_y=False
+        )
+        fig.add_trace(
+            go.Scatter(x=data_2021['Datum'], y=np.gradient(data_2021['Pocet.umrti']), name="2021"), secondary_y=False
+        )
+        # fig.add_trace(
+        #     go.Scatter(x=covid_data['Datum'], y=np.gradient(covid_data['Pocet.umrti']), name="Deaths per day"), secondary_y=True
+        # )
+
+        fig.layout.update(
+            title_text="Death rate by year", xaxis_rangeslider_visible=False, xaxis=dict(tickformat="%b")
+        )
+        fig.update_xaxes(title_text="")
+        fig.update_yaxes(title_text="Deaths per day", secondary_y=False)
+        # fig.update_yaxes(title_text="Deaths per day", secondary_y=True)
+        st.plotly_chart(fig)
 
 
-    # def plot_daily_stats():
-    #     # fig = go.Figure()
-    #     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    #     fig.add_trace(
-    #         go.Scatter(x=t, y=G, name="Glucose conc. [mmol/L]"), secondary_y=False
-    #     )
-    #     fig.add_trace(
-    #         go.Scatter(x=t, y=I, name="Insulin conc. [mU/L]"), secondary_y=True
-    #     )
-    #     fig.layout.update(
-    #         title_text="OGTT simulation", xaxis_rangeslider_visible=False
-    #     )
-    #     fig.update_xaxes(title_text="time [min]")
-    #     fig.update_yaxes(title_text="Glucose conc. [mmol/L]", secondary_y=False)
-    #     fig.update_yaxes(title_text="Insulin conc. [mU/L]", secondary_y=True)
-    #     st.plotly_chart(fig)
+    plot_daily_stats()
 
-    #plot_daily_stats()
+    plot_death_stats()
+    
+    plot_death_stats_per_year()
+
+    data_2021 = covid_data[covid_data['Datum'].dt.year==2021]
+    data_2021['Datum'] = data_2021['Datum'].mask(data_2021['Datum'].dt.year == 2021, 
+                             data_2021['Datum'] + pd.offsets.DateOffset(year=2020))
+    
