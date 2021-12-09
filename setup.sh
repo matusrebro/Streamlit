@@ -6,6 +6,6 @@ headless = true\n\
 port = $PORT\n\
 enableCORS = false\n\
 [mapbox]\n\
-token = "$MAPBOX_TOKEN"\n\
+token = ""\n\
 \n\
 " > ~/.streamlit/config.toml
