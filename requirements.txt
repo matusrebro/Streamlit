@@ -1,4 +1,4 @@
-streamlit==0.89.0
+streamlit==1.2.0
 datetime
 yfinance==0.1.63
 plotly
