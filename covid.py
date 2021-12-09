@@ -14,15 +14,31 @@ def app():
 
     daily_stats_slovakia_url = "https://raw.githubusercontent.com/Institut-Zdravotnych-Analyz/covid19-data/main/DailyStats/OpenData_Slovakia_Covid_DailyStats.csv"
 
-    @st.cache
-    def get_daily_stats():
-        covid_data = pd.read_csv(daily_stats_slovakia_url, sep=';')
-        covid_data['Datum'] = pd.to_datetime(covid_data['Datum'], format='%Y-%m-%d')
-        return covid_data
+    covid_deaths_agegroup_district = "https://raw.githubusercontent.com/Institut-Zdravotnych-Analyz/covid19-data/main/Deaths/OpenData_Slovakia_Covid_Deaths_AgeGroup_District.csv"
 
-    covid_data = get_daily_stats()
+    @st.cache
+    def get_covid_data():
+        daily_stats = pd.read_csv(daily_stats_slovakia_url, sep=';')
+        daily_stats['Datum'] = pd.to_datetime(daily_stats['Datum'], format='%Y-%m-%d')
+        covid_deaths = pd.read_csv(covid_deaths_agegroup_district, sep=';', encoding='cp1250')
+        covid_deaths['Date'] = pd.to_datetime(covid_deaths['Date'], format='%d.%m.%Y')
+        return daily_stats, covid_deaths
+
+    covid_data, covid_deaths = get_covid_data()
     #t = np.arange(0, len(covid_data['Datum'].values)) # days from 6.3..2020
 
+    # st.write(covid_deaths)
+    
+    regions = [val for val in covid_deaths['Region'].unique() if isinstance(val, str)]
+    
+    deaths_per_region = covid_deaths[covid_deaths['Region']=='Trnavský'].groupby(['Date'])['Region'].count().rename('Deaths')
+    st.text('Number of deaths per region')
+    st.write(covid_deaths['Region'].value_counts())
+    
+    # st.write(covid_deaths[covid_deaths['Region']=='Trnavský'])
+    
+    # st.write(deaths_per_region)
+    
     def plot_daily_stats():
         # fig = go.Figure()
         
@@ -62,7 +78,7 @@ def app():
         )
 
         fig.layout.update(
-            title_text="Deaths", xaxis_rangeslider_visible=False
+            title_text="Deaths", xaxis_rangeslider_visible=False, height=600, width=850
         )
         fig.update_xaxes(title_text="")
         fig.update_yaxes(title_text="Deaths", secondary_y=False)
@@ -89,7 +105,7 @@ def app():
         # )
 
         fig.layout.update(
-            title_text="Death rate by year", xaxis_rangeslider_visible=False, xaxis=dict(tickformat="%b")
+            title_text="Death rate by year", xaxis_rangeslider_visible=False, xaxis=dict(tickformat="%b"), height=600, width=850
         )
         fig.update_xaxes(title_text="")
         fig.update_yaxes(title_text="Deaths per day", secondary_y=False)
