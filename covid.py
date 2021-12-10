@@ -1,3 +1,4 @@
+from re import L
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -32,12 +33,29 @@ def app():
     regions = [val for val in covid_deaths['Region'].unique() if isinstance(val, str)]
     
     deaths_per_region = covid_deaths[covid_deaths['Region']=='Trnavský'].groupby(['Date'])['Region'].count().rename('Deaths')
+    deaths_per_age = covid_deaths.groupby(['AgeGroup'])['AgeGroup'].count().rename('Deaths').to_frame()
     st.text('Number of deaths per region')
     st.write(covid_deaths['Region'].value_counts())
     
     # st.write(covid_deaths[covid_deaths['Region']=='Trnavský'])
     
     # st.write(deaths_per_region)
+    
+    # st.write(deaths_per_age)
+    
+    def plot_deaths_per_age_hist():
+        fig = go.Figure()
+        fig.add_trace(
+            go.Histogram(x=covid_deaths['AgeGroup'])
+            )
+        fig.layout.update(
+            title_text="Deaths per age group", xaxis_rangeslider_visible=False, autosize=False, height=600, width=850
+        )
+        fig.update_xaxes(title_text="Age Group")
+        fig.update_yaxes(title_text="Deaths")
+        st.plotly_chart(fig)
+    
+    plot_deaths_per_age_hist()
     
     def plot_daily_stats():
         # fig = go.Figure()
