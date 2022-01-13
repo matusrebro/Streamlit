@@ -110,13 +110,19 @@ def app():
         
         data_2020 = covid_data[covid_data['Datum'].dt.year==2020]
         data_2021 = covid_data[covid_data['Datum'].dt.year==2021]
+        data_2022 = covid_data[covid_data['Datum'].dt.year==2022]
         data_2021['Datum'] = data_2021['Datum'].mask(data_2021['Datum'].dt.year == 2021, 
                              data_2021['Datum'] + pd.offsets.DateOffset(year=2020))
+        data_2022['Datum'] = data_2022['Datum'].mask(data_2022['Datum'].dt.year == 2022, 
+                             data_2022['Datum'] + pd.offsets.DateOffset(year=2020))
         fig.add_trace(
             go.Scatter(x=data_2020['Datum'], y=np.gradient(data_2020['Pocet.umrti']), name="2020"), secondary_y=False
         )
         fig.add_trace(
             go.Scatter(x=data_2021['Datum'], y=np.gradient(data_2021['Pocet.umrti']), name="2021"), secondary_y=False
+        )
+        fig.add_trace(
+            go.Scatter(x=data_2022['Datum'], y=np.gradient(data_2022['Pocet.umrti']), name="2022"), secondary_y=False
         )
         # fig.add_trace(
         #     go.Scatter(x=covid_data['Datum'], y=np.gradient(covid_data['Pocet.umrti']), name="Deaths per day"), secondary_y=True
@@ -136,8 +142,3 @@ def app():
     plot_death_stats()
     
     plot_death_stats_per_year()
-
-    data_2021 = covid_data[covid_data['Datum'].dt.year==2021]
-    data_2021['Datum'] = data_2021['Datum'].mask(data_2021['Datum'].dt.year == 2021, 
-                             data_2021['Datum'] + pd.offsets.DateOffset(year=2020))
-    
